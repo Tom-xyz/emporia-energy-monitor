@@ -13,8 +13,8 @@ class EmporiaMonitor < Formula
   depends_on "node"
 
   def install
-    # Install all source under libexec, then symlink the CLI into bin
-    libexec.install Dir["*"]
+    # Install all source (Dir["*"] excludes dotfiles by default; explicitly include .env.example).
+    libexec.install Dir["*"], ".env.example"
     cd libexec do
       system "npm", "install", "--omit=dev", "--no-audit", "--no-fund"
     end
