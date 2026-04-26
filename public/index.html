@@ -18,14 +18,27 @@
   --border2:   rgba(255,255,255,0.06);
   --blur:      blur(48px) saturate(180%);
   --text:      rgba(255,255,255,0.92);
-  --text2:     rgba(255,255,255,0.5);
-  --text3:     rgba(255,255,255,0.25);
+  --text2:     rgba(255,255,255,0.55);
+  --text3:     rgba(255,255,255,0.32);
   --radius:    24px;
   --radius-sm: 16px;
   --live:      #34d399;
   --accent:    #60a5fa;
   --shadow:    0 24px 80px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.35);
   --shadow-sm: 0 8px 32px rgba(0,0,0,0.35);
+  /* SVG / chart tokens */
+  --gauge-text-1:    #ffffff;
+  --gauge-text-2:    rgba(255,255,255,0.65);
+  --gauge-track:     rgba(255,255,255,0.07);
+  --gauge-tick:      rgba(255,255,255,0.55);
+  --gauge-end-label: rgba(255,255,255,0.35);
+  --gauge-needle:    #ffffff;
+  --bar-track:       rgba(255,255,255,0.08);
+  --tooltip-bg:      rgba(10,10,20,0.92);
+  --tooltip-border:  rgba(255,255,255,0.12);
+  --tooltip-text:    rgba(255,255,255,0.9);
+  --tooltip-text2:   rgba(255,255,255,0.65);
+  --tooltip-divider: rgba(255,255,255,0.1);
   /* circuit colours */
   --c1: #f97316; --c2: #38bdf8; --c3: #f472b6;
   --c4: #a78bfa; --c5: #fb923c; --c6: #fde047;
@@ -37,15 +50,24 @@
     --blob1:     #d0c4f0;
     --blob2:     #b8d4f0;
     --blob3:     #b8e8d0;
-    --glass:     rgba(255,255,255,0.7);
-    --glass-hov: rgba(255,255,255,0.85);
+    --glass:     rgba(255,255,255,0.78);
+    --glass-hov: rgba(255,255,255,0.92);
     --border:    rgba(255,255,255,0.95);
-    --border2:   rgba(0,0,0,0.06);
+    --border2:   rgba(8,9,15,0.08);
     --text:      rgba(8,9,15,0.92);
-    --text2:     rgba(8,9,15,0.52);
-    --text3:     rgba(8,9,15,0.3);
+    --text2:     rgba(8,9,15,0.62);
+    --text3:     rgba(8,9,15,0.42);
     --shadow:    0 24px 80px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06);
     --shadow-sm: 0 8px 32px rgba(0,0,0,0.08);
+    /* Chart tokens — flip for light bg */
+    --gauge-text-1:    rgba(8,9,15,0.92);
+    --gauge-text-2:    rgba(8,9,15,0.55);
+    --gauge-track:     rgba(8,9,15,0.08);
+    --gauge-tick:      rgba(8,9,15,0.45);
+    --gauge-end-label: rgba(8,9,15,0.35);
+    --gauge-needle:    #1f2937;
+    --bar-track:       rgba(8,9,15,0.08);
+    /* Tooltip stays dark for contrast even in light mode */
   }
 }
 html { height: 100%; }
@@ -239,7 +261,7 @@ header {
   font-weight: 800;
   letter-spacing: -2px;
   line-height: 1;
-  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.7) 100%);
+  background: linear-gradient(135deg, var(--gauge-text-1) 0%, var(--gauge-text-2) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -267,8 +289,9 @@ header {
 }
 .gauge-meta-item { text-align: center; }
 .gauge-meta-val {
-  font-size: 14px; font-weight: 700;
+  font-size: 16px; font-weight: 700;
   color: var(--text);
+  letter-spacing: -0.3px;
 }
 .gauge-meta-lbl {
   font-size: 10px; font-weight: 500;
@@ -347,7 +370,7 @@ header {
               white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .share-bar-wrap {
   flex: 1; height: 5px; border-radius: 99px;
-  background: rgba(255,255,255,0.08);
+  background: var(--bar-track);
   overflow: hidden;
 }
 .share-bar-fill {
@@ -493,7 +516,7 @@ header {
 .circuit-mini-bar {
   height: 3px;
   border-radius: 99px;
-  background: rgba(255,255,255,0.08);
+  background: var(--bar-track);
   overflow: hidden;
 }
 .circuit-mini-fill {
@@ -514,7 +537,7 @@ header {
 
 /* ─── Loading skeleton ───────────────────────────────────────────────────── */
 .skeleton {
-  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%);
+  background: linear-gradient(90deg, var(--bar-track) 25%, var(--glass-hov) 50%, var(--bar-track) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 8px;
@@ -625,22 +648,22 @@ header {
           <!-- Track -->
           <circle id="gaugeTrack" cx="140" cy="140" r="110"
             fill="none"
-            stroke="rgba(255,255,255,0.07)"
+            stroke="var(--gauge-track)"
             stroke-width="14"
             stroke-dasharray="518.4 172.8"
             stroke-linecap="round"
             transform="rotate(135 140 140)"/>
 
-          <!-- Glow shadow -->
+          <!-- Glow shadow (slightly visible bloom around the fill arc) -->
           <circle id="gaugeGlowShadow" cx="140" cy="140" r="110"
             fill="none"
             stroke="url(#gaugeGrad)"
-            stroke-width="20"
+            stroke-width="22"
             stroke-dasharray="0 691.2"
             stroke-linecap="round"
             transform="rotate(135 140 140)"
             filter="url(#softGlow)"
-            opacity="0.5"/>
+            opacity="0.35"/>
 
           <!-- Fill arc -->
           <circle id="gaugeFill" cx="140" cy="140" r="110"
@@ -654,13 +677,13 @@ header {
 
           <!-- Needle dot -->
           <circle id="gaugeNeedle" cx="0" cy="0" r="5"
-            fill="white"
+            fill="var(--gauge-needle)"
             opacity="0"
             filter="url(#gaugeGlow)"/>
 
           <!-- Min/max labels -->
-          <text x="36" y="248" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.2)" font-family="system-ui">0</text>
-          <text x="244" y="248" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.2)" font-family="system-ui" id="gaugeMaxLabel">20kW</text>
+          <text x="36" y="248" text-anchor="middle" font-size="9" fill="var(--gauge-end-label)" font-family="system-ui">0</text>
+          <text x="244" y="248" text-anchor="middle" font-size="9" fill="var(--gauge-end-label)" font-family="system-ui" id="gaugeMaxLabel">20kW</text>
         </svg>
 
         <div class="gauge-center">
@@ -816,7 +839,7 @@ function drawTicks() {
     line.setAttribute('y1', y1.toFixed(1));
     line.setAttribute('x2', x2.toFixed(1));
     line.setAttribute('y2', y2.toFixed(1));
-    line.setAttribute('stroke', 'rgba(255,255,255,0.5)');
+    line.setAttribute('stroke', 'var(--gauge-tick)');
     line.setAttribute('stroke-width', i % 5 === 0 ? '1.5' : '0.8');
     svg.appendChild(line);
   }
