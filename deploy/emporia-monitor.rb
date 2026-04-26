@@ -5,8 +5,8 @@
 class EmporiaMonitor < Formula
   desc "Real-time, liquid-glass energy dashboard for Emporia Vue"
   homepage "https://github.com/Tom-xyz/emporia-energy-monitor"
-  url "https://github.com/Tom-xyz/emporia-energy-monitor/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "6afc6f85681b133112287111adda6f247d7e91385757248f3f175d740a83ace1"
+  url "https://github.com/Tom-xyz/emporia-energy-monitor/archive/refs/tags/v0.1.1.tar.gz"
+  sha256 "REPLACE_WITH_TARBALL_SHA256"
   license "MIT"
   head "https://github.com/Tom-xyz/emporia-energy-monitor.git", branch: "main"
 

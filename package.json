@@ -1,6 +1,6 @@
 {
   "name": "@tom-xyz/emporia-energy-monitor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Real-time, liquid-glass energy dashboard for Emporia Vue (and pluggable backends)",
   "type": "module",
   "main": "src/server.mjs",

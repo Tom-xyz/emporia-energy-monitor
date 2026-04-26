@@ -160,21 +160,27 @@ header {
   color: var(--live);
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  transition: color 0.3s;
 }
+.live-badge.stale  { color: #fbbf24; }
+.live-badge.broken { color: #ef4444; }
 .live-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--live);
-  box-shadow: 0 0 8px var(--live);
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
   animation: livePulse 2s ease-in-out infinite;
 }
 @keyframes livePulse {
-  0%,100% { opacity: 1; box-shadow: 0 0 8px var(--live); }
-  50%     { opacity: 0.5; box-shadow: 0 0 3px var(--live); }
+  0%,100% { opacity: 1; box-shadow: 0 0 8px currentColor; }
+  50%     { opacity: 0.5; box-shadow: 0 0 3px currentColor; }
 }
 .last-update {
   font-size: 11px; color: var(--text3);
+  transition: color 0.3s;
 }
+.last-update.stale  { color: #fbbf24; }
+.last-update.broken { color: #ef4444; }
 
 /* ─── Grid ───────────────────────────────────────────────────────────────── */
 .grid-top {
@@ -1083,13 +1089,7 @@ function updateGaugeMeta(live) {
   }
 }
 
-// ─── Data fetching ────────────────────────────────────────────────────────────
-
-async function fetchJSON(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`${url}: ${res.status}`);
-  return res.json();
-}
+// ─── Error banner ────────────────────────────────────────────────────────────
 
 function showError(msg) {
   errBanner.textContent = `⚠ ${msg}`;
@@ -1097,37 +1097,89 @@ function showError(msg) {
   setTimeout(() => errBanner.classList.remove('visible'), 8000);
 }
 
-async function loadDevice() {
-  try {
-    const dev = await fetchJSON('/api/device');
-    state.device = dev;
-    $('devName').textContent = dev.name;
-    $('devModel').textContent = `${dev.model} · ${dev.circuits.length} circuits`;
-    assignColors(dev.circuits);
-    buildCircuitGrid(dev.circuits);
-    return dev;
-  } catch (e) {
-    showError(`Device load failed: ${e.message}`);
-    throw e;
+// ─── Last-updated tracking & stale UI ─────────────────────────────────────────
+
+const STALE_THRESHOLDS = {
+  // age (s) at which the indicator turns yellow / red, per snapshot
+  live:  { stale: 60,  broken: 180 },
+  today: { stale: 180, broken: 600 },
+  week:  { stale: 600, broken: 1800 },
+};
+
+// Track the freshest server-side cache age per snapshot
+const lastCache = { live: null, today: null, week: null, device: null };
+
+function rememberCache(name, payload) {
+  if (payload?._cache?.fetchedAt) {
+    lastCache[name] = { at: new Date(payload._cache.fetchedAt), error: payload._cache.error };
   }
 }
 
-async function loadLive() {
+function fmtAge(ms) {
+  if (ms == null) return '—';
+  const s = Math.round(ms / 1000);
+  if (s < 60)    return `${s}s ago`;
+  if (s < 3600)  return `${Math.round(s / 60)}m ago`;
+  return `${Math.round(s / 3600)}h ago`;
+}
+
+function refreshLastUpdated() {
+  // The "live" badge & header are bound to the live snapshot.
+  const c   = lastCache.live;
+  const age = c?.at ? Date.now() - c.at.getTime() : null;
+  const t   = STALE_THRESHOLDS.live;
+
+  let cls = '';
+  if (age == null)               cls = '';
+  else if (age > t.broken * 1000) cls = 'broken';
+  else if (age > t.stale  * 1000) cls = 'stale';
+
+  const liveBadge = document.querySelector('.live-badge');
+  liveBadge.className = `live-badge ${cls}`.trim();
+  liveBadge.lastChild.textContent = cls === 'broken' ? 'Stale' : (cls === 'stale' ? 'Stale' : 'Live');
+
+  lastUpdate.className = `last-update ${cls}`.trim();
+  if (c?.error)  lastUpdate.textContent = `Error: ${c.error}`;
+  else if (!c)   lastUpdate.textContent = 'Connecting…';
+  else            lastUpdate.textContent = `Live ${fmtAge(age)}`;
+}
+
+// Tick every second so the "X ago" text stays accurate even between fetches
+setInterval(refreshLastUpdated, 1000);
+
+// ─── Data fetching with cache awareness ───────────────────────────────────────
+
+async function fetchSnapshot(name) {
+  const res = await fetch(`/api/${name}`);
+  if (res.status === 503) {
+    // Cold-start: server is fetching, try again next tick
+    return null;
+  }
+  if (!res.ok) throw new Error(`/api/${name}: ${res.status}`);
+  const body = await res.json();
+  rememberCache(name, body);
+  return body;
+}
+
+async function tickLive() {
   try {
-    const live = await fetchJSON('/api/live');
+    const live = await fetchSnapshot('live');
+    if (!live) return;
     state.live = live;
     setGauge(live.totalKw);
     updateGaugeMeta(live);
     updateCircuitCards(live, state.today);
-    lastUpdate.textContent = 'Updated ' + new Date(live.updatedAt).toLocaleTimeString();
+    refreshLastUpdated();
   } catch (e) {
-    showError(`Live data failed: ${e.message}`);
+    lastCache.live = { at: lastCache.live?.at, error: e.message };
+    refreshLastUpdated();
   }
 }
 
-async function loadToday() {
+async function tickToday() {
   try {
-    const today = await fetchJSON('/api/today');
+    const today = await fetchSnapshot('today');
+    if (!today) return;
     state.today = today;
     updateSummary(today, state.week, state.device);
     updateCircuitCards(state.live, today);
@@ -1136,9 +1188,10 @@ async function loadToday() {
   }
 }
 
-async function loadWeek() {
+async function tickWeek() {
   try {
-    const week = await fetchJSON('/api/week');
+    const week = await fetchSnapshot('week');
+    if (!week) return;
     state.week = week;
     renderChart(week, state.device);
     updateSummary(state.today, week, state.device);
@@ -1147,22 +1200,46 @@ async function loadWeek() {
   }
 }
 
+async function loadDeviceOnce() {
+  // Device info doesn't change often; fetch once + retry on failure
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const dev = await fetchSnapshot('device');
+      if (!dev) {                       // server still warming
+        await new Promise(r => setTimeout(r, 1500));
+        continue;
+      }
+      state.device = dev;
+      $('devName').textContent  = dev.name;
+      $('devModel').textContent = `${dev.model} · ${dev.circuits.length} circuits`;
+      assignColors(dev.circuits);
+      buildCircuitGrid(dev.circuits);
+      return dev;
+    } catch (e) {
+      if (attempt === 2) showError(`Device load failed: ${e.message}`);
+      else await new Promise(r => setTimeout(r, 1500));
+    }
+  }
+}
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 
 async function boot() {
   drawTicks();
+  refreshLastUpdated();
 
-  try {
-    await loadDevice();
-    await Promise.all([loadLive(), loadToday(), loadWeek()]);
-  } catch (e) {
-    // loadDevice already showed error
-  }
+  // 1. Load device info (with retries) — needed before circuit grid can render
+  await loadDeviceOnce();
 
-  // Refresh intervals
-  setInterval(loadLive,  60_000);   // live power every 60s
-  setInterval(loadToday, 10 * 60_000);  // today's kWh every 10 min
-  setInterval(loadWeek,  10 * 60_000);  // week chart every 10 min
+  // 2. Fire all data fetches in parallel
+  tickLive();
+  tickToday();
+  tickWeek();
+
+  // 3. Frequent refresh — server caches each snapshot, so this is cheap
+  setInterval(tickLive,  5_000);    // visible smoothness
+  setInterval(tickToday, 30_000);   // today bumps every 30s
+  setInterval(tickWeek,  5 * 60_000);  // week shifts slowly
 }
 
 boot();
