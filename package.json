@@ -1,0 +1,52 @@
+{
+  "name": "@tom-xyz/emporia-energy-monitor",
+  "version": "0.1.0",
+  "description": "Real-time, liquid-glass energy dashboard for Emporia Vue (and pluggable backends)",
+  "type": "module",
+  "main": "src/server.mjs",
+  "bin": {
+    "emporia-monitor": "bin/emporia-monitor.mjs"
+  },
+  "scripts": {
+    "start": "node bin/emporia-monitor.mjs",
+    "dev": "node --watch bin/emporia-monitor.mjs",
+    "test": "node --test test/",
+    "test:watch": "node --test --watch test/"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "public/",
+    "deploy/",
+    ".env.example",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "keywords": [
+    "energy",
+    "monitor",
+    "emporia",
+    "vue",
+    "dashboard",
+    "smart-home",
+    "kwh",
+    "solar",
+    "iot"
+  ],
+  "author": "Tom Boyle",
+  "license": "MIT",
+  "homepage": "https://github.com/Tom-xyz/emporia-energy-monitor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tom-xyz/emporia-energy-monitor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Tom-xyz/emporia-energy-monitor/issues"
+  }
+}

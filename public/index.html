@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa Verde · Energy</title>
+<style>
+/* ─── Reset & Base ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --page-bg:   #08090f;
+  --blob1:     #1a0a3a;
+  --blob2:     #0a1a2a;
+  --blob3:     #001a10;
+  --glass:     rgba(255,255,255,0.055);
+  --glass-hov: rgba(255,255,255,0.08);
+  --border:    rgba(255,255,255,0.1);
+  --border2:   rgba(255,255,255,0.06);
+  --blur:      blur(48px) saturate(180%);
+  --text:      rgba(255,255,255,0.92);
+  --text2:     rgba(255,255,255,0.5);
+  --text3:     rgba(255,255,255,0.25);
+  --radius:    24px;
+  --radius-sm: 16px;
+  --live:      #34d399;
+  --accent:    #60a5fa;
+  --shadow:    0 24px 80px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.35);
+  --shadow-sm: 0 8px 32px rgba(0,0,0,0.35);
+  /* circuit colours */
+  --c1: #f97316; --c2: #38bdf8; --c3: #f472b6;
+  --c4: #a78bfa; --c5: #fb923c; --c6: #fde047;
+  --c7: #f43f5e; --c8: #4ade80;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --page-bg:   #eef0f5;
+    --blob1:     #d0c4f0;
+    --blob2:     #b8d4f0;
+    --blob3:     #b8e8d0;
+    --glass:     rgba(255,255,255,0.7);
+    --glass-hov: rgba(255,255,255,0.85);
+    --border:    rgba(255,255,255,0.95);
+    --border2:   rgba(0,0,0,0.06);
+    --text:      rgba(8,9,15,0.92);
+    --text2:     rgba(8,9,15,0.52);
+    --text3:     rgba(8,9,15,0.3);
+    --shadow:    0 24px 80px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06);
+    --shadow-sm: 0 8px 32px rgba(0,0,0,0.08);
+  }
+}
+html { height: 100%; }
+body {
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  background: var(--page-bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Ambient Background ────────────────────────────────────────────────── */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; overflow: hidden;
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.55;
+  transition: background 3s ease;
+}
+.blob-1 {
+  width: 70vw; height: 70vw;
+  top: -20%; left: -15%;
+  background: var(--blob1);
+  animation: blobFloat1 20s ease-in-out infinite;
+}
+.blob-2 {
+  width: 55vw; height: 55vw;
+  top: 30%; right: -20%;
+  background: var(--blob2);
+  animation: blobFloat2 25s ease-in-out infinite;
+}
+.blob-3 {
+  width: 45vw; height: 45vw;
+  bottom: -10%; left: 20%;
+  background: var(--blob3);
+  animation: blobFloat3 18s ease-in-out infinite;
+}
+@keyframes blobFloat1 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33%     { transform: translate(3vw,-3vh) scale(1.08); }
+  66%     { transform: translate(-2vw,4vh) scale(0.95); }
+}
+@keyframes blobFloat2 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  50%     { transform: translate(-4vw,3vh) scale(1.12); }
+}
+@keyframes blobFloat3 {
+  0%,100% { transform: translate(0,0) scale(1); }
+  40%     { transform: translate(2vw,-2vh) scale(0.92); }
+  80%     { transform: translate(-3vw,3vh) scale(1.06); }
+}
+
+/* ─── Layout ────────────────────────────────────────────────────────────── */
+.app {
+  position: relative; z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+}
+
+/* ─── Glass Card ────────────────────────────────────────────────────────── */
+.card {
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+.card:hover {
+  background: var(--glass-hov);
+}
+/* Inner highlight stripe */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  border-top: 1px solid rgba(255,255,255,0.18);
+  pointer-events: none;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.hd-left { display: flex; align-items: center; gap: 10px; }
+.hd-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.hd-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.hd-sub   { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.hd-right { display: flex; align-items: center; gap: 12px; }
+.live-badge {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  color: var(--live);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.live-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 8px var(--live);
+  animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%,100% { opacity: 1; box-shadow: 0 0 8px var(--live); }
+  50%     { opacity: 0.5; box-shadow: 0 0 3px var(--live); }
+}
+.last-update {
+  font-size: 11px; color: var(--text3);
+}
+
+/* ─── Grid ───────────────────────────────────────────────────────────────── */
+.grid-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.grid-mid {
+  margin-bottom: 16px;
+}
+.grid-circuits {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .grid-top { grid-template-columns: 1fr; }
+  .grid-circuits { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
+  .grid-circuits { grid-template-columns: repeat(2, 1fr); }
+  .app { padding: 12px 12px 36px; }
+}
+
+/* ─── Gauge Widget ───────────────────────────────────────────────────────── */
+.gauge-card {
+  position: relative;
+  padding: 32px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 320px;
+}
+.gauge-wrap {
+  position: relative;
+  width: min(280px, 88vw);
+  height: min(280px, 88vw);
+  flex-shrink: 0;
+}
+.gauge-svg {
+  width: 100%; height: 100%;
+  overflow: visible;
+}
+.gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.gauge-kw {
+  font-size: clamp(2.8rem, 10vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.5s cubic-bezier(0.23,1,0.32,1);
+}
+.gauge-unit {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-top: 2px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.gauge-pct {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 6px;
+}
+.gauge-meta {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 0 8px;
+}
+.gauge-meta-item { text-align: center; }
+.gauge-meta-val {
+  font-size: 14px; font-weight: 700;
+  color: var(--text);
+}
+.gauge-meta-lbl {
+  font-size: 10px; font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* ─── Summary Widget ─────────────────────────────────────────────────────── */
+.summary-card {
+  position: relative;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.summary-title {
+  font-size: 11px; font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.summary-big {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.summary-big-num {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1;
+}
+.summary-big-unit {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.summary-cost {
+  font-size: 13px;
+  color: var(--text2);
+  font-weight: 500;
+}
+.summary-divider {
+  height: 1px;
+  background: var(--border2);
+}
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.summary-row-label { font-size: 13px; color: var(--text2); }
+.summary-row-value { font-size: 14px; font-weight: 700; }
+
+/* Cost accent */
+.cost-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(52,211,153,0.12);
+  border: 1px solid rgba(52,211,153,0.25);
+  border-radius: 100px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #34d399;
+}
+
+/* Circuit share bars */
+.share-bars { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.share-row  { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.share-name { color: var(--text2); width: 110px; flex-shrink: 0;
+              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.share-bar-wrap {
+  flex: 1; height: 5px; border-radius: 99px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.share-bar-fill {
+  height: 100%; border-radius: 99px;
+  transition: width 0.6s cubic-bezier(0.23,1,0.32,1);
+}
+.share-pct { color: var(--text3); width: 32px; text-align: right; flex-shrink: 0; }
+
+/* ─── 7-Day Chart ─────────────────────────────────────────────────────────── */
+.chart-card {
+  position: relative;
+  padding: 24px 24px 20px;
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.chart-title { font-size: 15px; font-weight: 700; }
+.chart-subtitle { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.chart-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--text2);
+}
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0;
+}
+.chart-bars-wrap {
+  overflow: hidden;
+  border-radius: 12px;
+}
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 180px;
+  padding: 0 2px;
+}
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+  cursor: default;
+}
+.bar-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  position: relative;
+  transition: filter 0.2s;
+}
+.bar-col:hover .bar-stack { filter: brightness(1.15); }
+.bar-segment {
+  width: 100%;
+  transition: height 0.7s cubic-bezier(0.23,1,0.32,1);
+}
+.bar-segment:last-child { border-radius: 8px 8px 0 0; }
+.bar-date {
+  font-size: 10px;
+  color: var(--text3);
+  padding-bottom: 4px;
+  white-space: nowrap;
+}
+.bar-today { color: var(--accent); font-weight: 700; }
+
+/* ─── Circuit Cards ───────────────────────────────────────────────────────── */
+.circuit-card {
+  position: relative;
+  padding: 16px 16px 14px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  cursor: default;
+  transition: transform 0.2s ease;
+}
+.circuit-card:hover { transform: translateY(-2px); }
+.circuit-card.active::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: var(--radius);
+  border: 1.5px solid;
+  border-color: var(--c);
+  opacity: 0.35;
+  pointer-events: none;
+  animation: cardGlow 2s ease-in-out infinite;
+}
+@keyframes cardGlow {
+  0%,100% { opacity: 0.25; }
+  50%     { opacity: 0.55; }
+}
+.circuit-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.circuit-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.circuit-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.circuit-watts {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  transition: color 0.4s ease;
+}
+.circuit-kwh {
+  font-size: 11px;
+  color: var(--text2);
+}
+.circuit-mini-bar {
+  height: 3px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.circuit-mini-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.23,1,0.32,1);
+}
+
+/* ─── Section titles ─────────────────────────────────────────────────────── */
+.sec-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 4px 10px;
+}
+
+/* ─── Loading skeleton ───────────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Tooltip ─────────────────────────────────────────────────────────────── */
+.tooltip {
+  position: fixed;
+  background: rgba(10,10,20,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 999;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  opacity: 0;
+  transition: opacity 0.15s;
+  min-width: 140px;
+}
+.tooltip.visible { opacity: 1; }
+.tooltip-date { font-weight: 700; margin-bottom: 6px; color: rgba(255,255,255,0.9); }
+.tooltip-row  { display: flex; justify-content: space-between; gap: 16px; color: rgba(255,255,255,0.65); }
+.tooltip-val  { font-weight: 700; color: rgba(255,255,255,0.9); }
+
+/* ─── Error state ────────────────────────────────────────────────────────── */
+.error-banner {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #fca5a5;
+  margin-bottom: 16px;
+  display: none;
+}
+.error-banner.visible { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Ambient background -->
+<div class="bg-canvas" id="bgCanvas">
+  <div class="blob blob-1" id="blob1"></div>
+  <div class="blob blob-2" id="blob2"></div>
+  <div class="blob blob-3" id="blob3"></div>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-date" id="tt-date"></div>
+  <div id="tt-rows"></div>
+</div>
+
+<div class="app">
+
+  <!-- Header -->
+  <header>
+    <div class="hd-left">
+      <div class="hd-icon">⚡</div>
+      <div>
+        <div class="hd-title" id="devName">Casa Verde</div>
+        <div class="hd-sub" id="devModel">Loading…</div>
+      </div>
+    </div>
+    <div class="hd-right">
+      <div class="live-badge"><span class="live-dot"></span>Live</div>
+      <div class="last-update" id="lastUpdate">—</div>
+    </div>
+  </header>
+
+  <div class="error-banner" id="errBanner"></div>
+
+  <!-- Top row: gauge + summary -->
+  <div class="grid-top">
+
+    <!-- Gauge -->
+    <div class="card gauge-card">
+      <div class="gauge-wrap">
+        <svg class="gauge-svg" viewBox="0 0 280 280" id="gaugeSvg">
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="#34d399"/>
+              <stop offset="45%"  stop-color="#fbbf24"/>
+              <stop offset="80%"  stop-color="#f97316"/>
+              <stop offset="100%" stop-color="#ef4444"/>
+            </linearGradient>
+            <filter id="gaugeGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="3"/>
+            </filter>
+          </defs>
+
+          <!-- Tick marks -->
+          <g id="gaugeTicks" opacity="0.25"></g>
+
+          <!-- Track -->
+          <circle id="gaugeTrack" cx="140" cy="140" r="110"
+            fill="none"
+            stroke="rgba(255,255,255,0.07)"
+            stroke-width="14"
+            stroke-dasharray="518.4 172.8"
+            stroke-linecap="round"
+            transform="rotate(135 140 140)"/>
+
+          <!-- Glow shadow -->
+          <circle id="gaugeGlowShadow" cx="140" cy="140" r="110"
+            fill="none"
+            stroke="url(#gaugeGrad)"
+            stroke-width="20"
+            stroke-dasharray="0 691.2"
+            stroke-linecap="round"
+            transform="rotate(135 140 140)"
+            filter="url(#softGlow)"
+            opacity="0.5"/>
+
+          <!-- Fill arc -->
+          <circle id="gaugeFill" cx="140" cy="140" r="110"
+            fill="none"
+            stroke="url(#gaugeGrad)"
+            stroke-width="14"
+            stroke-dasharray="0 691.2"
+            stroke-linecap="round"
+            transform="rotate(135 140 140)"
+            filter="url(#gaugeGlow)"/>
+
+          <!-- Needle dot -->
+          <circle id="gaugeNeedle" cx="0" cy="0" r="5"
+            fill="white"
+            opacity="0"
+            filter="url(#gaugeGlow)"/>
+
+          <!-- Min/max labels -->
+          <text x="36" y="248" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.2)" font-family="system-ui">0</text>
+          <text x="244" y="248" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.2)" font-family="system-ui" id="gaugeMaxLabel">20kW</text>
+        </svg>
+
+        <div class="gauge-center">
+          <div class="gauge-kw" id="gaugeKw">—</div>
+          <div class="gauge-unit">kW Total</div>
+          <div class="gauge-pct" id="gaugePct"></div>
+        </div>
+      </div>
+
+      <div class="gauge-meta">
+        <div class="gauge-meta-item">
+          <div class="gauge-meta-val" id="metaVoltage">—</div>
+          <div class="gauge-meta-lbl">Volts</div>
+        </div>
+        <div class="gauge-meta-item">
+          <div class="gauge-meta-val" id="metaAmps">—</div>
+          <div class="gauge-meta-lbl">Amps</div>
+        </div>
+        <div class="gauge-meta-item">
+          <div class="gauge-meta-val" id="metaCircuits">—</div>
+          <div class="gauge-meta-lbl">Active</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card summary-card">
+      <div>
+        <div class="summary-title">Today's Energy</div>
+        <div class="summary-big" style="margin-top:10px">
+          <div class="summary-big-num" id="todayKwh">—</div>
+          <div class="summary-big-unit">kWh</div>
+        </div>
+        <div class="summary-cost" style="margin-top:4px">
+          <span class="cost-chip">$ <span id="todayCost">—</span></span>
+          <span style="margin-left:6px;font-size:12px;color:var(--text3)">at <span id="rateLabel">—</span>¢/kWh</span>
+        </div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="summary-row">
+          <span class="summary-row-label">Yesterday</span>
+          <span class="summary-row-value" id="yestKwh">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-row-label">7-day total</span>
+          <span class="summary-row-value" id="weekKwh">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-row-label">7-day cost</span>
+          <span class="summary-row-value" id="weekCost">—</span>
+        </div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div>
+        <div class="summary-title" style="margin-bottom:12px">Today by circuit</div>
+        <div class="share-bars" id="shareBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7-day chart -->
+  <div class="sec-title">7-Day History</div>
+  <div class="grid-mid">
+    <div class="card chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Daily Energy Usage</div>
+          <div class="chart-subtitle">kWh per circuit — last 7 days</div>
+        </div>
+        <div class="chart-legend" id="chartLegend"></div>
+      </div>
+      <div class="chart-bars" id="chartBars"></div>
+    </div>
+  </div>
+
+  <!-- Circuit grid -->
+  <div class="sec-title">Circuit Monitor</div>
+  <div class="grid-circuits" id="circuitGrid"></div>
+
+</div>
+
+<script>
+// ─── Constants ──────────────────────────────────────────────────────────────
+
+const MAX_KW     = 20;
+const CIRC_R     = 110;
+const CIRC_FULL  = 2 * Math.PI * CIRC_R;       // ≈ 691.2
+const GAUGE_SPAN = CIRC_FULL * (270 / 360);    // ≈ 518.4
+const GAUGE_GAP  = CIRC_FULL - GAUGE_SPAN;     // ≈ 172.8
+
+// Circuit colours (indexed by position, 1-8)
+const CIRCUIT_COLORS = ['#f97316','#38bdf8','#f472b6','#a78bfa','#fb923c','#fde047','#f43f5e','#4ade80'];
+const TYPE_ICONS = { ac: '❄️', outlet: '🔌', light: '💡', fan: '🌀' };
+
+// ─── State ───────────────────────────────────────────────────────────────────
+
+let state = {
+  device: null,
+  live: null,
+  today: null,
+  week: null,
+  circuitColors: {},  // circuitId → hex color
+  maxKw: MAX_KW,
+};
+
+// ─── DOM refs ─────────────────────────────────────────────────────────────────
+
+const $ = id => document.getElementById(id);
+const gaugeFill       = $('gaugeFill');
+const gaugeGlowShadow = $('gaugeGlowShadow');
+const gaugeNeedle     = $('gaugeNeedle');
+const gaugeKw         = $('gaugeKw');
+const gaugePct        = $('gaugePct');
+const metaVoltage     = $('metaVoltage');
+const metaAmps        = $('metaAmps');
+const metaCircuits    = $('metaCircuits');
+const todayKwh        = $('todayKwh');
+const todayCost       = $('todayCost');
+const rateLabel       = $('rateLabel');
+const yestKwh         = $('yestKwh');
+const weekKwh         = $('weekKwh');
+const weekCost        = $('weekCost');
+const shareBars       = $('shareBars');
+const chartBars       = $('chartBars');
+const chartLegend     = $('chartLegend');
+const circuitGrid     = $('circuitGrid');
+const lastUpdate      = $('lastUpdate');
+const errBanner       = $('errBanner');
+const tooltip         = $('tooltip');
+const ttDate          = $('tt-date');
+const ttRows          = $('tt-rows');
+
+// ─── Gauge rendering ─────────────────────────────────────────────────────────
+
+function drawTicks() {
+  const svg = $('gaugeTicks');
+  const cx = 140, cy = 140, r = 132;
+  for (let i = 0; i <= 20; i++) {
+    // Map i (0-20) to angle: start=135°, sweep=270°
+    const angle = (135 + (i / 20) * 270) * Math.PI / 180;
+    const inner = i % 5 === 0 ? r - 10 : r - 6;
+    const x1 = cx + r * Math.cos(angle);
+    const y1 = cy + r * Math.sin(angle);
+    const x2 = cx + inner * Math.cos(angle);
+    const y2 = cy + inner * Math.sin(angle);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1.toFixed(1));
+    line.setAttribute('y1', y1.toFixed(1));
+    line.setAttribute('x2', x2.toFixed(1));
+    line.setAttribute('y2', y2.toFixed(1));
+    line.setAttribute('stroke', 'rgba(255,255,255,0.5)');
+    line.setAttribute('stroke-width', i % 5 === 0 ? '1.5' : '0.8');
+    svg.appendChild(line);
+  }
+}
+
+function setGauge(kw) {
+  const pct = Math.max(0, Math.min(1, kw / state.maxKw));
+  const fill = pct * GAUGE_SPAN;
+  const rest = CIRC_FULL - fill;
+
+  gaugeFill.setAttribute('stroke-dasharray', `${fill.toFixed(1)} ${rest.toFixed(1)}`);
+  gaugeGlowShadow.setAttribute('stroke-dasharray', `${fill.toFixed(1)} ${rest.toFixed(1)}`);
+
+  // Needle position (on the arc circumference)
+  const angle = (135 + pct * 270) * Math.PI / 180;
+  const nx = 140 + CIRC_R * Math.cos(angle);
+  const ny = 140 + CIRC_R * Math.sin(angle);
+  gaugeNeedle.setAttribute('cx', nx.toFixed(1));
+  gaugeNeedle.setAttribute('cy', ny.toFixed(1));
+  gaugeNeedle.setAttribute('opacity', pct > 0.01 ? '1' : '0');
+
+  gaugeKw.textContent = kw >= 1 ? kw.toFixed(2) : (kw * 1000).toFixed(0);
+  if (kw < 1) {
+    gaugeKw.closest('.gauge-center').querySelector('.gauge-unit').textContent = 'W Total';
+  } else {
+    gaugeKw.closest('.gauge-center').querySelector('.gauge-unit').textContent = 'kW Total';
+  }
+  gaugePct.textContent = `${(pct * 100).toFixed(0)}% of ${state.maxKw} kW max`;
+
+  // Tint background blobs based on power level
+  const heat = pct;
+  $('blob1').style.background = `hsl(${260 - heat * 80}, 60%, 15%)`;
+  $('blob2').style.background = `hsl(${220 - heat * 40}, 60%, 12%)`;
+}
+
+// ─── Circuit colors ────────────────────────────────────────────────────────
+
+function assignColors(circuits) {
+  circuits.forEach((c, i) => {
+    state.circuitColors[c.id] = CIRCUIT_COLORS[i % CIRCUIT_COLORS.length];
+  });
+}
+
+// ─── Circuit grid ─────────────────────────────────────────────────────────
+
+function buildCircuitGrid(circuits) {
+  circuitGrid.innerHTML = '';
+  circuits.forEach((c, i) => {
+    const color = state.circuitColors[c.id];
+    const icon  = TYPE_ICONS[c.type] || '🔌';
+    const div   = document.createElement('div');
+    div.className = 'card circuit-card';
+    div.id = `cc-${c.id}`;
+    div.style.setProperty('--c', color);
+    div.innerHTML = `
+      <div class="circuit-hd">
+        <div class="circuit-icon" style="background:${color}22;color:${color}">${icon}</div>
+        <div class="circuit-name" title="${c.name}">${c.name}</div>
+      </div>
+      <div>
+        <div class="circuit-watts" id="cw-${c.id}" style="color:${color}">— W</div>
+        <div class="circuit-kwh"   id="ck-${c.id}">—</div>
+      </div>
+      <div class="circuit-mini-bar">
+        <div class="circuit-mini-fill" id="cb-${c.id}" style="background:${color};width:0%"></div>
+      </div>`;
+    circuitGrid.appendChild(div);
+  });
+}
+
+function updateCircuitCards(live, today) {
+  if (!state.device) return;
+  const circuits = state.device.circuits;
+
+  // Max kW across all circuits for mini-bar scaling
+  const maxCircuitKw = Math.max(0.01, ...circuits.map(c => live?.circuits?.[c.id]?.kw ?? 0));
+
+  circuits.forEach(c => {
+    const liveData  = live?.circuits?.[c.id];
+    const kw        = liveData?.kw ?? 0;
+    const watts     = kw * 1000;
+    const todayCirc = today?.circuits?.[c.id] ?? 0;
+    const color     = state.circuitColors[c.id];
+
+    const wEl = $(`cw-${c.id}`);
+    const kEl = $(`ck-${c.id}`);
+    const bEl = $(`cb-${c.id}`);
+    const card = $(`cc-${c.id}`);
+
+    if (wEl) wEl.textContent = watts >= 1000 ? `${(watts/1000).toFixed(2)} kW` : `${watts.toFixed(0)} W`;
+    if (kEl) kEl.textContent = `${todayCirc.toFixed(3)} kWh today`;
+    if (bEl) bEl.style.width = `${(kw / maxCircuitKw * 100).toFixed(1)}%`;
+
+    if (card) {
+      if (watts > 10) {
+        card.classList.add('active');
+      } else {
+        card.classList.remove('active');
+      }
+    }
+  });
+}
+
+// ─── Summary widget ──────────────────────────────────────────────────────────
+
+function updateSummary(today, week, device) {
+  if (!today || !device) return;
+
+  const rate = device.ratePerKwh || 0;
+  todayKwh.textContent = today.totalKwh.toFixed(3);
+  todayCost.textContent = (today.totalKwh * rate).toFixed(2);
+  rateLabel.textContent = (rate * 100).toFixed(0);
+  weekKwh.textContent  = week ? `${week.totalKwh.toFixed(1)} kWh` : '—';
+  weekCost.textContent = week ? `$${(week.totalKwh * rate).toFixed(2)}` : '—';
+
+  // Yesterday from week data
+  if (week?.days) {
+    const today_str = new Date().toLocaleDateString('en-CA', { timeZone: device.timezone || 'America/Chicago' });
+    const yest = week.days.find(d => {
+      const dDate = new Date(d.ts);
+      const dStr  = dDate.toLocaleDateString('en-CA', { timeZone: device.timezone || 'America/Chicago' });
+      return dStr !== today_str;
+    });
+    // Pick the most recent non-today day
+    const nonToday = week.days.filter(d => {
+      const dStr = new Date(d.ts).toLocaleDateString('en-CA', { timeZone: device.timezone || 'America/Chicago' });
+      return dStr !== today_str && !d.partial;
+    });
+    const prev = nonToday[nonToday.length - 1];
+    yestKwh.textContent = prev ? `${prev.totalKwh.toFixed(3)} kWh` : '—';
+  }
+
+  // Share bars
+  if (device.circuits && today.circuits) {
+    const total = Math.max(0.001, today.totalKwh);
+    const sorted = [...device.circuits].sort((a, b) => (today.circuits[b.id] ?? 0) - (today.circuits[a.id] ?? 0));
+    shareBars.innerHTML = sorted.slice(0, 6).map(c => {
+      const kwh  = today.circuits[c.id] ?? 0;
+      const pct  = Math.min(100, (kwh / total * 100));
+      const color = state.circuitColors[c.id];
+      return `<div class="share-row">
+        <div class="share-name" title="${c.name}">${c.name}</div>
+        <div class="share-bar-wrap">
+          <div class="share-bar-fill" style="background:${color};width:${pct.toFixed(1)}%"></div>
+        </div>
+        <div class="share-pct">${pct.toFixed(0)}%</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ─── 7-Day Chart ──────────────────────────────────────────────────────────────
+
+function renderChart(week, device) {
+  if (!week || !device) return;
+
+  const circuits = device.circuits;
+  const days = week.days;
+  if (!days?.length) return;
+
+  const maxKwh = Math.max(0.01, ...days.map(d => d.totalKwh));
+  const tzName = device.timezone || 'America/Chicago';
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: tzName });
+
+  // Legend
+  chartLegend.innerHTML = circuits.map(c => `
+    <div class="legend-item">
+      <div class="legend-dot" style="background:${state.circuitColors[c.id]}"></div>
+      ${c.name}
+    </div>`).join('');
+
+  // Bars
+  chartBars.innerHTML = '';
+  days.forEach(day => {
+    const localDate = new Date(day.ts).toLocaleDateString('en-CA', { timeZone: tzName });
+    const isToday   = localDate === todayStr;
+    const dayLabel  = new Date(day.ts).toLocaleDateString('en-US', { weekday: 'short', timeZone: tzName });
+
+    const col = document.createElement('div');
+    col.className = 'bar-col';
+
+    const stack = document.createElement('div');
+    stack.className = 'bar-stack';
+    stack.style.height = '100%';
+
+    // Tooltip data
+    col.addEventListener('mouseenter', e => showTooltip(e, day, device, tzName));
+    col.addEventListener('mousemove',  e => moveTooltip(e));
+    col.addEventListener('mouseleave', hideTooltip);
+
+    // Render segments in reverse so bottom circuit is at the bottom
+    const circsByKwh = [...circuits].sort((a,b) => (day.circuits[a.id]??0) - (day.circuits[b.id]??0));
+    let usedPct = 0;
+    circsByKwh.forEach(c => {
+      const kwh = day.circuits[c.id] ?? 0;
+      const pct = (kwh / maxKwh) * 100;
+      if (pct < 0.1) return;
+      const seg = document.createElement('div');
+      seg.className = 'bar-segment';
+      seg.style.cssText = `height:${pct.toFixed(2)}%;background:${state.circuitColors[c.id]};flex-shrink:0`;
+      stack.appendChild(seg);
+      usedPct += pct;
+    });
+
+    // If today + partial, show hash pattern overlay
+    if (day.partial) {
+      stack.style.opacity = '0.75';
+    }
+
+    const label = document.createElement('div');
+    label.className = `bar-date${isToday ? ' bar-today' : ''}`;
+    label.textContent = isToday ? 'Today' : dayLabel;
+
+    col.appendChild(stack);
+    col.appendChild(label);
+    chartBars.appendChild(col);
+  });
+}
+
+// ─── Tooltip ──────────────────────────────────────────────────────────────────
+
+function showTooltip(e, day, device, tz) {
+  const dateStr = new Date(day.ts).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: tz });
+  ttDate.textContent = dateStr + (day.partial ? ' (in progress)' : '');
+  const sorted = [...device.circuits].sort((a,b) => (day.circuits[b.id]??0) - (day.circuits[a.id]??0));
+  ttRows.innerHTML = sorted
+    .filter(c => (day.circuits[c.id] ?? 0) > 0.001)
+    .map(c => `<div class="tooltip-row">
+      <span style="color:${state.circuitColors[c.id]}">${c.name}</span>
+      <span class="tooltip-val">${(day.circuits[c.id]??0).toFixed(3)} kWh</span>
+    </div>`)
+    .join('');
+  const totalRow = document.createElement('div');
+  ttRows.innerHTML += `<div class="tooltip-row" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1)">
+    <span style="color:rgba(255,255,255,0.7)">Total</span>
+    <span class="tooltip-val">${day.totalKwh.toFixed(3)} kWh</span>
+  </div>`;
+  moveTooltip(e);
+  tooltip.classList.add('visible');
+}
+
+function moveTooltip(e) {
+  const x = e.clientX + 16;
+  const y = e.clientY - 10;
+  const tw = tooltip.offsetWidth || 160;
+  const th = tooltip.offsetHeight || 100;
+  tooltip.style.left = (x + tw > window.innerWidth ? x - tw - 32 : x) + 'px';
+  tooltip.style.top  = (y + th > window.innerHeight ? y - th : y) + 'px';
+}
+
+function hideTooltip() { tooltip.classList.remove('visible'); }
+
+// ─── Gauge meta (volts/amps) ─────────────────────────────────────────────────
+
+function updateGaugeMeta(live) {
+  if (!live) return;
+  // Find voltage/amps from first circuit with data
+  const circuits = Object.values(live.circuits || {});
+  const withVolt = circuits.find(c => c.volts != null);
+  metaVoltage.textContent = withVolt ? `${withVolt.volts.toFixed(0)}V` : '—';
+
+  // Estimate total amps = total kW × 1000 / 240V
+  const totalAmps = live.totalKw * 1000 / 240;
+  metaAmps.textContent = totalAmps > 0.1 ? `${totalAmps.toFixed(1)}A` : '—';
+
+  // Count active circuits (>10W)
+  if (state.device) {
+    const active = state.device.circuits.filter(c => (live.circuits[c.id]?.kw ?? 0) * 1000 > 10).length;
+    metaCircuits.textContent = `${active}/${state.device.circuits.length}`;
+  }
+}
+
+// ─── Data fetching ────────────────────────────────────────────────────────────
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${url}: ${res.status}`);
+  return res.json();
+}
+
+function showError(msg) {
+  errBanner.textContent = `⚠ ${msg}`;
+  errBanner.classList.add('visible');
+  setTimeout(() => errBanner.classList.remove('visible'), 8000);
+}
+
+async function loadDevice() {
+  try {
+    const dev = await fetchJSON('/api/device');
+    state.device = dev;
+    $('devName').textContent = dev.name;
+    $('devModel').textContent = `${dev.model} · ${dev.circuits.length} circuits`;
+    assignColors(dev.circuits);
+    buildCircuitGrid(dev.circuits);
+    return dev;
+  } catch (e) {
+    showError(`Device load failed: ${e.message}`);
+    throw e;
+  }
+}
+
+async function loadLive() {
+  try {
+    const live = await fetchJSON('/api/live');
+    state.live = live;
+    setGauge(live.totalKw);
+    updateGaugeMeta(live);
+    updateCircuitCards(live, state.today);
+    lastUpdate.textContent = 'Updated ' + new Date(live.updatedAt).toLocaleTimeString();
+  } catch (e) {
+    showError(`Live data failed: ${e.message}`);
+  }
+}
+
+async function loadToday() {
+  try {
+    const today = await fetchJSON('/api/today');
+    state.today = today;
+    updateSummary(today, state.week, state.device);
+    updateCircuitCards(state.live, today);
+  } catch (e) {
+    showError(`Today data failed: ${e.message}`);
+  }
+}
+
+async function loadWeek() {
+  try {
+    const week = await fetchJSON('/api/week');
+    state.week = week;
+    renderChart(week, state.device);
+    updateSummary(state.today, week, state.device);
+  } catch (e) {
+    showError(`Week data failed: ${e.message}`);
+  }
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+
+async function boot() {
+  drawTicks();
+
+  try {
+    await loadDevice();
+    await Promise.all([loadLive(), loadToday(), loadWeek()]);
+  } catch (e) {
+    // loadDevice already showed error
+  }
+
+  // Refresh intervals
+  setInterval(loadLive,  60_000);   // live power every 60s
+  setInterval(loadToday, 10 * 60_000);  // today's kWh every 10 min
+  setInterval(loadWeek,  10 * 60_000);  // week chart every 10 min
+}
+
+boot();
+</script>
+</body>
+</html>

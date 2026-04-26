@@ -1,0 +1,53 @@
+[Unit]
+Description=Emporia Energy Monitor
+Documentation=https://github.com/Tom-xyz/emporia-energy-monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+WorkingDirectory=@APP_DIR@
+EnvironmentFile=-@APP_DIR@/.env
+Environment=NODE_ENV=production
+Environment=PORT=@PORT@
+ExecStart=@APP_DIR@/.node/bin/node @APP_DIR@/bin/emporia-monitor.mjs
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=15
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=emporia-monitor
+
+# ── Resource limits (don't impact other host services) ──
+MemoryMax=256M
+MemoryHigh=200M
+CPUQuota=40%
+TasksMax=64
+
+# ── Filesystem isolation ──
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=tmpfs
+BindReadOnlyPaths=@APP_DIR@
+ReadWritePaths=@APP_DIR@
+
+# ── Kernel/syscall isolation ──
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target
