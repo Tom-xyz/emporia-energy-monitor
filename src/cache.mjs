@@ -18,13 +18,14 @@
  *   instead of issuing a second one.
  */
 
-const SNAPSHOTS = ['device', 'live', 'today', 'week'];
+const SNAPSHOTS = ['device', 'live', 'today', 'week', 'peak'];
 
 const PLUGIN_METHOD = {
   device: 'getDevice',
   live:   'getLive',
   today:  'getToday',
   week:   'getWeek',
+  peak:   'getPeakToday',
 };
 
 export class DataCache {
@@ -38,9 +39,10 @@ export class DataCache {
 
     const defaults = {
       device: 5 * 60_000,   // device layout rarely changes
-      live:   30_000,       // Emporia's power resolution is ~1 min anyway
+      live:   15_000,       // catches each new 1-min Emporia sample within ~7s avg
       today:  60_000,       // hourly buckets, refresh every minute
       week:   5 * 60_000,   // daily buckets, refresh every 5 min
+      peak:   3 * 60_000,   // peak only moves when usage spikes — cheap to refresh
     };
     this.intervals = { ...defaults, ...opts.intervals };
 
@@ -85,6 +87,12 @@ export class DataCache {
     const snap   = this.snapshots[name];
     const method = PLUGIN_METHOD[name];
     const t0     = Date.now();
+    // Plugin may not implement optional methods (e.g. peak). Skip silently.
+    if (typeof this.plugin[method] !== 'function') {
+      snap.error    = `plugin does not support ${name}`;
+      snap.fetching = null;
+      return;
+    }
     try {
       const data = await this.plugin[method]();
       snap.data      = data;

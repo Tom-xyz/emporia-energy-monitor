@@ -22,7 +22,10 @@ const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
 export async function createApp(overrides = {}) {
   const cfg    = { ...(await loadConfig()), ...overrides };
   const plugin = await loadPlugin(cfg.plugin, cfg.plugins[cfg.plugin] || {});
-  const cache  = new DataCache(plugin);
+  // Plugins can declare a preferred live-poll cadence; emporia drops it to 5s
+  // in fast-live mode so the legacy AppAPI's 1S resolution is actually felt.
+  const liveIntervalMs = cfg.plugins?.[cfg.plugin]?.fastLive ? 5_000 : undefined;
+  const cache  = new DataCache(plugin, liveIntervalMs ? { intervals: { live: liveIntervalMs } } : {});
 
   const app = express();
   app.disable('x-powered-by');
@@ -65,10 +68,15 @@ export async function createApp(overrides = {}) {
     version: cfg.version || 'dev',
     cache:   cache.status(),
   }));
+  app.get('/api/ui-config', (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.json(cfg.ui || { theme: 'dark', tween: true, sparkline: true });
+  });
   app.get('/api/device', wrap('device'));
   app.get('/api/live',   wrap('live'));
   app.get('/api/today',  wrap('today'));
   app.get('/api/week',   wrap('week'));
+  app.get('/api/peak',   wrap('peak'));
 
   return { app, cfg, plugin, cache };
 }

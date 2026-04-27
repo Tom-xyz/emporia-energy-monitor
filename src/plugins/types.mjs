@@ -52,12 +52,19 @@
  * @property {DayUsage[]} days
  * @property {string} updatedAt
  *
+ * @typedef {Object} PeakSnapshot
+ * @property {number} peakKw       - highest instantaneous total kW seen since local midnight
+ * @property {string|null} peakAt  - ISO timestamp of the peak minute (or null if unknown)
+ * @property {string} date         - YYYY-MM-DD in device tz
+ * @property {string} updatedAt
+ *
  * @typedef {Object} EnergyPlugin
  * @property {string} name
- * @property {() => Promise<DeviceInfo>}    getDevice
- * @property {() => Promise<LiveSnapshot>}  getLive
- * @property {() => Promise<TodayUsage>}    getToday
- * @property {() => Promise<WeekUsage>}     getWeek
+ * @property {() => Promise<DeviceInfo>}     getDevice
+ * @property {() => Promise<LiveSnapshot>}   getLive
+ * @property {() => Promise<TodayUsage>}     getToday
+ * @property {() => Promise<WeekUsage>}      getWeek
+ * @property {() => Promise<PeakSnapshot>=}  getPeakToday  - optional; if absent, /api/peak is unavailable and the UI falls back to client-tracked peak
  */
 
 export {};

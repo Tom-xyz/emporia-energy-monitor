@@ -48,6 +48,64 @@ export class EmporiaAPI {
     });
     return this._get(`${NEW_API}/v1/devices/energy-monitors/circuits/usages/power?${p}`, 'Authorization');
   }
+
+  /**
+   * Legacy AppAPI — instant per-channel usage at fine resolutions. Unlike the
+   * c-api `power` endpoint (floor: MINUTES), this accepts scale="1S" returning
+   * kWh consumed in the 1-second bucket aligned to `instant`. Multiply by
+   * 3600 for kW.  Caveats:
+   *   - Only ~3 hours of 1S history is retained.
+   *   - Polling faster than ~5s starts returning null channels under load
+   *     (PyEmVue retries with backoff for the same reason).
+   *   - This endpoint uses AuthToken header, not Authorization.
+   */
+  getDeviceListUsages({ deviceGid, instant, scale = '1S', energyUnit = 'KilowattHours' }) {
+    const p = new URLSearchParams({
+      apiMethod:  'getDeviceListUsages',
+      deviceGids: String(deviceGid),
+      instant,
+      scale,
+      energyUnit,
+    });
+    return this._get(`${LEGACY_API}/AppAPI?${p}`, 'AuthToken');
+  }
+}
+
+// kWh-per-bucket → kW conversion factor for each scale.
+const SCALE_KW_FACTOR = { '1S': 3600, '1MIN': 60, '15MIN': 4, '1H': 1 };
+
+/**
+ * Parse the AppAPI getDeviceListUsages response into a flat
+ * { circuitId: { kw, name } } map. Returns null kw for missing channels so the
+ * caller can detect partial responses and retry.
+ */
+export function parseDeviceListUsages(data, deviceGid, scale = '1S') {
+  const factor = SCALE_KW_FACTOR[scale] ?? 1;
+  const dlu = data?.deviceListUsages || {};
+  const devices = dlu.devices || [];
+  const dev = devices.find(d => String(d.deviceGid) === String(deviceGid)) || devices[0];
+  if (!dev) return {};
+  const byId = {};
+  for (const ch of dev.channelUsages || []) {
+    const usage = ch.usage;
+    byId[String(ch.channelNum)] = {
+      kw:   usage == null ? null : usage * factor,
+      name: ch.name,
+    };
+    // Recurse into nestedDevices (some installs split mains across sub-devices)
+    if (Array.isArray(ch.nestedDevices)) {
+      for (const sub of ch.nestedDevices) {
+        for (const subCh of sub.channelUsages || []) {
+          const u = subCh.usage;
+          byId[String(subCh.channelNum)] = {
+            kw:   u == null ? null : u * factor,
+            name: subCh.name,
+          };
+        }
+      }
+    }
+  }
+  return byId;
 }
 
 // ── Response parsers ────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,8 +44,32 @@
   --c4: #a78bfa; --c5: #fb923c; --c6: #fde047;
   --c7: #f43f5e; --c8: #4ade80;
 }
+/* Light theme (explicit) ─────────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  --page-bg:   #eef0f5;
+  --blob1:     #d0c4f0;
+  --blob2:     #b8d4f0;
+  --blob3:     #b8e8d0;
+  --glass:     rgba(255,255,255,0.78);
+  --glass-hov: rgba(255,255,255,0.92);
+  --border:    rgba(255,255,255,0.95);
+  --border2:   rgba(8,9,15,0.08);
+  --text:      rgba(8,9,15,0.92);
+  --text2:     rgba(8,9,15,0.62);
+  --text3:     rgba(8,9,15,0.42);
+  --shadow:    0 24px 80px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-sm: 0 8px 32px rgba(0,0,0,0.08);
+  --gauge-text-1:    rgba(8,9,15,0.92);
+  --gauge-text-2:    rgba(8,9,15,0.55);
+  --gauge-track:     rgba(8,9,15,0.08);
+  --gauge-tick:      rgba(8,9,15,0.45);
+  --gauge-end-label: rgba(8,9,15,0.35);
+  --gauge-needle:    #1f2937;
+  --bar-track:       rgba(8,9,15,0.08);
+}
+/* Auto theme follows OS preference */
 @media (prefers-color-scheme: light) {
-  :root {
+  :root[data-theme="auto"] {
     --page-bg:   #eef0f5;
     --blob1:     #d0c4f0;
     --blob2:     #b8d4f0;
@@ -59,7 +83,6 @@
     --text3:     rgba(8,9,15,0.42);
     --shadow:    0 24px 80px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06);
     --shadow-sm: 0 8px 32px rgba(0,0,0,0.08);
-    /* Chart tokens — flip for light bg */
     --gauge-text-1:    rgba(8,9,15,0.92);
     --gauge-text-2:    rgba(8,9,15,0.55);
     --gauge-track:     rgba(8,9,15,0.08);
@@ -67,7 +90,6 @@
     --gauge-end-label: rgba(8,9,15,0.35);
     --gauge-needle:    #1f2937;
     --bar-track:       rgba(8,9,15,0.08);
-    /* Tooltip stays dark for contrast even in light mode */
   }
 }
 html { height: 100%; }
@@ -568,6 +590,164 @@ header {
 .tooltip-row  { display: flex; justify-content: space-between; gap: 16px; color: rgba(255,255,255,0.65); }
 .tooltip-val  { font-weight: 700; color: rgba(255,255,255,0.9); }
 
+/* ─── Trend widget (1-min glowing area chart) ─────────────────────────────── */
+.trend-card {
+  position: relative;
+  padding: 22px 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.trend-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.trend-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.trend-sub {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+.trend-stats {
+  display: flex;
+  gap: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.trend-stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  align-items: flex-end;
+}
+.trend-stat-lbl {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.trend-stat-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+.trend-chart-body {
+  flex: 1;
+  min-width: 0;
+  height: 140px;
+  position: relative;
+}
+.trend-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.trend-area  { transition: opacity 0.3s; }
+.trend-line  { transition: filter 0.3s; }
+.trend-dot   { transform-origin: center; }
+.trend-dot-pulse {
+  animation: trendDotPulse 2.4s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+@keyframes trendDotPulse {
+  0%, 100% { opacity: 0.7; r: 4; }
+  50%      { opacity: 0.15; r: 11; }
+}
+/* Faint horizontal grid lines */
+.trend-grid line { stroke: var(--border2); stroke-width: 0.5; }
+.trend-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text3);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+.trend-yscale {
+  font-size: 10px;
+  color: var(--text3);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: right;
+  padding-right: 8px;
+  align-self: stretch;
+  flex-shrink: 0;
+  min-width: 48px;
+}
+.trend-chart-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-height: 0;
+}
+.trend-chart-body {
+  flex: 1;
+  min-width: 0;
+}
+.trend-trend-arrow {
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 12px;
+  vertical-align: 1px;
+}
+.trend-trend-up   { color: #f97316; }
+.trend-trend-down { color: #34d399; }
+.trend-trend-flat { color: var(--text3); }
+
+/* Peak label inside gauge */
+.gauge-peak-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text2);
+  margin-top: 4px;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.gauge-peak-label .peak-val {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  text-transform: none;
+}
+
+/* ─── Disconnected dim ───────────────────────────────────────────────────── */
+/* Applied to <body> when the live feed is broken/stale; freezes anim + dims values */
+body.disconnected .gauge-kw,
+body.disconnected .gauge-pct,
+body.disconnected .gauge-meta-val,
+body.disconnected .summary-big-num,
+body.disconnected .circuit-watts,
+body.disconnected .sparkline,
+body.disconnected .trend-stat-val {
+  opacity: 0.55;
+  filter: saturate(0.6);
+}
+body.disconnected .live-dot { animation: none; }
+
+/* Circuit grid number prefix */
+.circuit-number {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  font-variant-numeric: tabular-nums;
+  margin-right: 4px;
+}
+
 /* ─── Error state ────────────────────────────────────────────────────────── */
 .error-banner {
   background: rgba(239,68,68,0.12);
@@ -689,7 +869,9 @@ header {
         <div class="gauge-center">
           <div class="gauge-kw" id="gaugeKw">—</div>
           <div class="gauge-unit">kW Total</div>
-          <div class="gauge-pct" id="gaugePct"></div>
+          <div class="gauge-peak-label" id="gaugePeakLabel" style="opacity:0">
+            Today's peak <span class="peak-val" id="gaugePeakVal">—</span>
+          </div>
         </div>
       </div>
 
@@ -707,6 +889,7 @@ header {
           <div class="gauge-meta-lbl">Active</div>
         </div>
       </div>
+
     </div>
 
     <!-- Summary -->
@@ -749,8 +932,95 @@ header {
     </div>
   </div>
 
-  <!-- 7-day chart -->
-  <div class="sec-title">7-Day History</div>
+  <!-- 1-minute trend widget -->
+  <div class="grid-mid" id="trendWrap" style="display:none">
+    <div class="card trend-card">
+      <div class="trend-head">
+        <div>
+          <div class="trend-title">1-Minute Trend</div>
+          <div class="trend-sub">Total consumption</div>
+        </div>
+        <div class="trend-stats">
+          <div class="trend-stat-block">
+            <div class="trend-stat-lbl">Now</div>
+            <div class="trend-stat-val" id="trendNow">—</div>
+          </div>
+          <div class="trend-stat-block">
+            <div class="trend-stat-lbl">Avg</div>
+            <div class="trend-stat-val" id="trendAvg">—</div>
+          </div>
+          <div class="trend-stat-block">
+            <div class="trend-stat-lbl">Range</div>
+            <div class="trend-stat-val" id="trendRange">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="trend-chart-row">
+        <div class="trend-yscale" id="trendYScale">
+          <span>—</span>
+          <span>—</span>
+          <span>0</span>
+        </div>
+        <div class="trend-chart-body">
+          <svg class="trend-svg" id="trendSvg" viewBox="0 0 1000 140" preserveAspectRatio="none">
+            <defs>
+              <clipPath id="trendClip">
+                <rect x="0" y="0" width="1000" height="140"/>
+              </clipPath>
+              <!-- Stroke gradient: low (green) at bottom → high (red) at top, mirrors the gauge arc -->
+              <linearGradient id="trendStrokeGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%"   stop-color="#34d399"/>
+                <stop offset="45%"  stop-color="#fbbf24"/>
+                <stop offset="80%"  stop-color="#f97316"/>
+                <stop offset="100%" stop-color="#ef4444"/>
+              </linearGradient>
+              <!-- Area fill: same hues, transparent toward bottom -->
+              <linearGradient id="trendFillGrad" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%"   stop-color="#34d399" stop-opacity="0"/>
+                <stop offset="45%"  stop-color="#fbbf24" stop-opacity="0.12"/>
+                <stop offset="80%"  stop-color="#f97316" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="#ef4444" stop-opacity="0.32"/>
+              </linearGradient>
+              <filter id="trendGlow" x="-10%" y="-10%" width="120%" height="120%">
+                <feGaussianBlur stdDeviation="2" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+            <!-- Y grid: 25%, 50%, 75% -->
+            <g class="trend-grid">
+              <line x1="0" y1="35"  x2="1000" y2="35"  stroke-dasharray="2 4"/>
+              <line x1="0" y1="70"  x2="1000" y2="70"  stroke-dasharray="2 4"/>
+              <line x1="0" y1="105" x2="1000" y2="105" stroke-dasharray="2 4"/>
+            </g>
+            <g clip-path="url(#trendClip)">
+              <path class="trend-area" id="trendArea" fill="url(#trendFillGrad)" d=""/>
+              <path class="trend-line" id="trendLine" stroke="url(#trendStrokeGrad)" stroke-width="2" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round" filter="url(#trendGlow)" d=""/>
+            </g>
+            <!-- Pulsing halo + solid live dot -->
+            <circle class="trend-dot trend-dot-pulse" id="trendDotHalo" cx="0" cy="0" r="6"
+                    fill="url(#trendStrokeGrad)" filter="url(#trendGlow)" opacity="0.5"/>
+            <circle class="trend-dot" id="trendDot" cx="0" cy="0" r="3.5"
+                    fill="url(#trendStrokeGrad)" filter="url(#trendGlow)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="trend-axis">
+        <span>1 min ago</span>
+        <span>now →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Circuit grid -->
+  <div class="sec-title">Circuit Monitor</div>
+  <div class="grid-circuits" id="circuitGrid"></div>
+
+  <!-- 7-day chart (last on page) -->
+  <div class="sec-title" style="margin-top:24px">7-Day History</div>
   <div class="grid-mid">
     <div class="card chart-card">
       <div class="chart-header">
@@ -764,20 +1034,23 @@ header {
     </div>
   </div>
 
-  <!-- Circuit grid -->
-  <div class="sec-title">Circuit Monitor</div>
-  <div class="grid-circuits" id="circuitGrid"></div>
-
 </div>
 
 <script>
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const MAX_KW     = 20;
-const CIRC_R     = 110;
-const CIRC_FULL  = 2 * Math.PI * CIRC_R;       // ≈ 691.2
-const GAUGE_SPAN = CIRC_FULL * (270 / 360);    // ≈ 518.4
-const GAUGE_GAP  = CIRC_FULL - GAUGE_SPAN;     // ≈ 172.8
+const MIN_GAUGE_MAX   = 2;         // floor; ratchet only goes up, resets at midnight
+const CIRC_R          = 110;
+const CIRC_FULL       = 2 * Math.PI * CIRC_R;       // ≈ 691.2
+const GAUGE_SPAN      = CIRC_FULL * (270 / 360);    // ≈ 518.4
+const GAUGE_GAP       = CIRC_FULL - GAUGE_SPAN;     // ≈ 172.8
+
+const LIVE_POLL_MS    = 5000;
+const TWEEN_MS        = 4500;       // only used if TWEEN env enables tweening
+const SPARK_WINDOW_MS = 60_000;     // 1-minute rolling window
+const TREND_VB_W      = 1000;       // SVG viewBox width  (preserveAspectRatio='none' stretches it)
+const TREND_VB_H      = 140;        // SVG viewBox height
+const TREND_PAD_TOP   = 6;          // px headroom so peak doesn't touch the top edge
 
 // Circuit colours (indexed by position, 1-8)
 const CIRCUIT_COLORS = ['#f97316','#38bdf8','#f472b6','#a78bfa','#fb923c','#fde047','#f43f5e','#4ade80'];
@@ -790,8 +1063,15 @@ let state = {
   live: null,
   today: null,
   week: null,
-  circuitColors: {},  // circuitId → hex color
-  maxKw: MAX_KW,
+  circuitColors: {},          // circuitId → hex color
+  maxKw: MIN_GAUGE_MAX,
+  peakKw: 0,                  // today's instantaneous peak
+  peakDate: null,             // 'YYYY-MM-DD' in device tz
+  peakSource: 'client',       // 'server' once /api/peak responds, else 'client'
+  totalKwSeries: [],          // [{ t: ms, kw: number }] for sparkline
+  circuitOrder: [],           // [circuitId] in current display order (for FLIP)
+  connected: true,            // false when last live fetch failed/stale
+  ui: { theme: 'dark', tween: false, sparkline: true, jitter: true },
 };
 
 // ─── DOM refs ─────────────────────────────────────────────────────────────────
@@ -801,7 +1081,9 @@ const gaugeFill       = $('gaugeFill');
 const gaugeGlowShadow = $('gaugeGlowShadow');
 const gaugeNeedle     = $('gaugeNeedle');
 const gaugeKw         = $('gaugeKw');
-const gaugePct        = $('gaugePct');
+const gaugeMaxLabel   = $('gaugeMaxLabel');
+const gaugePeakLabel  = $('gaugePeakLabel');
+const gaugePeakVal    = $('gaugePeakVal');
 const metaVoltage     = $('metaVoltage');
 const metaAmps        = $('metaAmps');
 const metaCircuits    = $('metaCircuits');
@@ -820,6 +1102,61 @@ const errBanner       = $('errBanner');
 const tooltip         = $('tooltip');
 const ttDate          = $('tt-date');
 const ttRows          = $('tt-rows');
+const trendWrap       = $('trendWrap');
+const trendSvg        = $('trendSvg');
+const trendArea       = $('trendArea');
+const trendLine       = $('trendLine');
+const trendDot        = $('trendDot');
+const trendDotHalo    = $('trendDotHalo');
+const trendNow        = $('trendNow');
+const trendAvg        = $('trendAvg');
+const trendRange      = $('trendRange');
+
+// ─── Tween helpers ────────────────────────────────────────────────────────────
+// One-shot RAF tween between two scalars. Cancels prior tweens on the same key
+// so consecutive polls smoothly hand off without stutter.
+const _tweens = new Map();
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+function tweenValue(key, from, to, durationMs, onUpdate) {
+  // Never animate while disconnected — show last known value statically.
+  if (!state.connected) {
+    onUpdate(to);
+    _tweens.delete(key);
+    return;
+  }
+  // If tween disabled or no real change, set immediately.
+  if (!state.ui.tween || !isFinite(from) || from === to || durationMs <= 0) {
+    onUpdate(to);
+    _tweens.delete(key);
+    return;
+  }
+  const prev = _tweens.get(key);
+  if (prev) cancelAnimationFrame(prev.raf);
+
+  const start = performance.now();
+  const step = (now) => {
+    const t = Math.min(1, (now - start) / durationMs);
+    const v = from + (to - from) * easeOutCubic(t);
+    onUpdate(v);
+    if (t < 1) {
+      const entry = _tweens.get(key);
+      if (entry) entry.raf = requestAnimationFrame(step);
+    } else {
+      _tweens.delete(key);
+    }
+  };
+  const entry = { raf: requestAnimationFrame(step), to };
+  _tweens.set(key, entry);
+}
+
+// Track the most recent target per key so consecutive polls tween from "where we are now".
+const _lastTarget = new Map();
+function tweenTo(key, to, durationMs, onUpdate) {
+  const from = _lastTarget.has(key) ? _lastTarget.get(key) : to;
+  _lastTarget.set(key, to);
+  tweenValue(key, from, to, durationMs, onUpdate);
+}
 
 // ─── Gauge rendering ─────────────────────────────────────────────────────────
 
@@ -845,15 +1182,59 @@ function drawTicks() {
   }
 }
 
+// ─── Gauge scale: quantized one-way ratchet ──────────────────────────────────
+// Tiers grow gauge max only when current usage crosses 80% of the active tier.
+// Never ratchets down within a day — resets at local-midnight via updatePeak().
+const GAUGE_TIERS = [2, 5, 10, 20, 30, 50, 80];
+function tierForKw(kw) {
+  for (const t of GAUGE_TIERS) if (kw <= t * 0.8) return t;
+  return GAUGE_TIERS[GAUGE_TIERS.length - 1];
+}
+
+function maybeRatchetGauge(kw) {
+  // Only step up; the day-reset (in updatePeak) is the only way it goes down.
+  const needed = tierForKw(kw);
+  if (needed > state.maxKw) state.maxKw = needed;
+}
+
+// Render the gauge arc + needle + label for the given kW. Tweens fill, glow,
+// and needle smoothly between consecutive calls; tier-change rescales the
+// percentage frame so the needle visibly relaxes back into range.
+//
+// `gauge.kw.target` and `gauge.pct.target` track the *real* live values so
+// the wobble layer can read them and add a slow ±sin perturbation on top of
+// whatever value the tween is currently displaying.
 function setGauge(kw) {
-  const pct = Math.max(0, Math.min(1, kw / state.maxKw));
+  maybeRatchetGauge(kw);
+  const maxKw = state.maxKw;
+  if (gaugeMaxLabel) gaugeMaxLabel.textContent = `${maxKw}kW`;
+
+  state._gaugeKwTarget  = kw;
+  state._gaugePctTarget = Math.max(0, Math.min(1, kw / maxKw));
+
+  tweenTo('gauge.pct', state._gaugePctTarget, TWEEN_MS, (pct) => {
+    state._gaugePctDisplay = pct;
+    paintGauge();
+  });
+  tweenTo('gauge.kw', kw, TWEEN_MS, (v) => {
+    state._gaugeKwDisplay = v;
+    paintGauge();
+  });
+}
+
+// Paint the arc/needle from current display targets + wobble. Wobble drifts
+// the *needle* only — the kW number is set on each poll and stays still.
+function paintGauge() {
+  if (state._gaugeKwDisplay == null || state._gaugePctDisplay == null) return;
+  const maxKw     = state.maxKw;
+  const wobblePct = currentWobbleOffset();
+  const pct = Math.max(0, Math.min(1, state._gaugePctDisplay + wobblePct));
+
   const fill = pct * GAUGE_SPAN;
   const rest = CIRC_FULL - fill;
-
   gaugeFill.setAttribute('stroke-dasharray', `${fill.toFixed(1)} ${rest.toFixed(1)}`);
   gaugeGlowShadow.setAttribute('stroke-dasharray', `${fill.toFixed(1)} ${rest.toFixed(1)}`);
 
-  // Needle position (on the arc circumference)
   const angle = (135 + pct * 270) * Math.PI / 180;
   const nx = 140 + CIRC_R * Math.cos(angle);
   const ny = 140 + CIRC_R * Math.sin(angle);
@@ -861,18 +1242,259 @@ function setGauge(kw) {
   gaugeNeedle.setAttribute('cy', ny.toFixed(1));
   gaugeNeedle.setAttribute('opacity', pct > 0.01 ? '1' : '0');
 
-  gaugeKw.textContent = kw >= 1 ? kw.toFixed(2) : (kw * 1000).toFixed(0);
-  if (kw < 1) {
-    gaugeKw.closest('.gauge-center').querySelector('.gauge-unit').textContent = 'W Total';
-  } else {
-    gaugeKw.closest('.gauge-center').querySelector('.gauge-unit').textContent = 'kW Total';
-  }
-  gaugePct.textContent = `${(pct * 100).toFixed(0)}% of ${state.maxKw} kW max`;
+  // The displayed number reflects the *real* polled value (no wobble).
+  const kwShown = state._gaugeKwDisplay;
+  gaugeKw.textContent = kwShown >= 1 ? kwShown.toFixed(2) : (kwShown * 1000).toFixed(0);
+  const unit = gaugeKw.closest('.gauge-center').querySelector('.gauge-unit');
+  unit.textContent = kwShown < 1 ? 'W Total' : 'kW Total';
 
-  // Tint background blobs based on power level
-  const heat = pct;
-  $('blob1').style.background = `hsl(${260 - heat * 80}, 60%, 15%)`;
-  $('blob2').style.background = `hsl(${220 - heat * 40}, 60%, 12%)`;
+  $('blob1').style.background = `hsl(${260 - pct * 80}, 60%, 15%)`;
+  $('blob2').style.background = `hsl(${220 - pct * 40}, 60%, 12%)`;
+}
+
+// ─── Slow needle drift ───────────────────────────────────────────────────────
+// A glacial sin drift on the needle only (number stays static). ±0.4% of scale,
+// 9s + 14s superposed periods so the motion never repeats exactly and is well
+// below "fast enough to feel jittery". Skipped when disconnected.
+const WOBBLE_AMPL = 0.004;
+function currentWobbleOffset() {
+  if (!state.ui.jitter || !state.connected) return 0;
+  const t = performance.now() / 1000;
+  return WOBBLE_AMPL * (Math.sin(t / 9.0) * 0.6 + Math.sin(t / 14.0) * 0.4);
+}
+// 30 fps is plenty for a sub-1% drift — saves half the paint cost vs RAF.
+let _wobbleLast = 0;
+function wobbleLoop(now) {
+  if (now - _wobbleLast >= 33) {
+    _wobbleLast = now;
+    paintGauge();
+  }
+  requestAnimationFrame(wobbleLoop);
+}
+
+// ─── Peak (today) ────────────────────────────────────────────────────────────
+const PEAK_STORAGE_KEY = 'emporia.peakKw.v1';
+
+function localDateStr(tz) {
+  return new Date().toLocaleDateString('en-CA', { timeZone: tz || 'UTC' });
+}
+
+function loadPeak() {
+  try {
+    const raw = localStorage.getItem(PEAK_STORAGE_KEY);
+    if (!raw) return;
+    const { date, peakKw } = JSON.parse(raw);
+    state.peakDate = date;
+    state.peakKw   = Number(peakKw) || 0;
+  } catch { /* ignore */ }
+}
+
+function savePeak() {
+  try {
+    localStorage.setItem(PEAK_STORAGE_KEY, JSON.stringify({
+      date:   state.peakDate,
+      peakKw: state.peakKw,
+    }));
+  } catch { /* ignore */ }
+}
+
+function renderPeak() {
+  if (state.peakKw > 0.01) {
+    gaugePeakVal.textContent = state.peakKw >= 1
+      ? `${state.peakKw.toFixed(2)} kW`
+      : `${(state.peakKw * 1000).toFixed(0)} W`;
+    gaugePeakLabel.style.opacity = '1';
+  } else {
+    gaugePeakLabel.style.opacity = '0';
+  }
+}
+
+function updatePeak(kw) {
+  const tz = state.device?.timezone || 'UTC';
+  const today = localDateStr(tz);
+  if (state.peakDate !== today) {
+    // New day — reset peak and gauge tier
+    state.peakDate = today;
+    state.peakKw = 0;
+    state.maxKw = MIN_GAUGE_MAX;
+  }
+  if (kw > state.peakKw) {
+    state.peakKw = kw;
+    savePeak();
+  }
+  renderPeak();
+}
+
+// ─── 1-min trend chart (SVG glowing area) ───────────────────────────────────
+// Smooth Catmull-Rom path over the sample window, gradient stroke + area fill,
+// pulsing dot pinned to the latest sample. Re-rendered every 100ms so the
+// curve scrolls smoothly right→left as `now` advances.
+
+function pushKwSample(kw) {
+  const now = Date.now();
+  state.totalKwSeries.push({ t: now, kw });
+  // Keep ~5s past the visible window so the leftmost on-screen sample has an
+  // off-screen neighbour; that neighbour acts as a Catmull-Rom control point
+  // and keeps the left edge from twitching when a sample drops out.
+  const cutoff = now - SPARK_WINDOW_MS - 5000;
+  while (state.totalKwSeries.length && state.totalKwSeries[0].t < cutoff) {
+    state.totalKwSeries.shift();
+  }
+}
+
+// Synthetic in-between samples drive the trend chart so it animates smoothly
+// instead of stepping on each real poll. Two layers:
+//   1. state.smoothedKw eases toward the latest real reading (low-pass), so
+//      the synthetic baseline drifts gradually rather than snapping.
+//   2. Each tick pushes baseline + tiny ±jitter into the chart buffer.
+// Display-only — never seeds gauge values. Frozen when disconnected.
+const SYNTHETIC_SAMPLE_MS = 200;     // 5Hz — dense points keep Catmull-Rom smooth
+const SYNTHETIC_JITTER    = 0;       // off; smoothed-baseline easing gives all the motion
+const BASELINE_EASE       = 0.10;    // fraction of (target-current) closed per tick
+function tickSyntheticSample() {
+  if (!state.connected || !state.live) return;
+  const target = state.live.totalKw;
+  const cur    = state.smoothedKw ?? target;
+  state.smoothedKw = cur + (target - cur) * BASELINE_EASE;
+  const base   = state.smoothedKw;
+  const wiggle = (Math.random() - 0.5) * 2 * SYNTHETIC_JITTER * Math.max(base, 0.01);
+  pushKwSample(Math.max(0, base + wiggle));
+}
+
+function fmtKwShort(v) {
+  if (!isFinite(v)) return '—';
+  return v >= 1 ? `${v.toFixed(2)} kW` : `${(v * 1000).toFixed(0)} W`;
+}
+
+// Round up to a "nice" kW for chart y-axis: 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, ...
+function niceCeil(v) {
+  if (v <= 0) return 0.05;
+  const exp = Math.floor(Math.log10(v));
+  const base = Math.pow(10, exp);
+  const mantissa = v / base;
+  const niceMantissas = [1, 2, 2.5, 5, 10];
+  for (const n of niceMantissas) if (mantissa <= n) return n * base;
+  return 10 * base;
+}
+
+// Catmull-Rom → cubic Bezier for a smooth path through points. Tension 0.5.
+function smoothPathD(pts) {
+  if (pts.length === 0) return '';
+  if (pts.length === 1) return `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  let d = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] || pts[i + 1];
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+function renderTrendChart() {
+  if (!state.ui.sparkline || !trendSvg) return;
+  const samples = state.totalKwSeries;
+  if (samples.length < 2) {
+    trendArea.setAttribute('d', '');
+    trendLine.setAttribute('d', '');
+    trendDot.setAttribute('opacity', '0');
+    trendDotHalo.setAttribute('opacity', '0');
+    trendNow.textContent = trendAvg.textContent = trendRange.textContent = '—';
+    return;
+  }
+
+  const now = Date.now();
+  const start = now - SPARK_WINDOW_MS;
+  const inWindow = samples.filter(s => s.t >= start);
+  if (inWindow.length < 2) {
+    trendArea.setAttribute('d', '');
+    trendLine.setAttribute('d', '');
+    return;
+  }
+
+  // Auto-scaled y-axis: nice-rounded peak with a little headroom so the
+  // top of the curve doesn't kiss the top edge.
+  const rawPeak = Math.max(0.01, ...inWindow.map(s => s.kw));
+  const niceMax = niceCeil(rawPeak * 1.05);
+
+  // Drawable inner area inside the viewBox (pad top + bottom)
+  const innerTop = TREND_PAD_TOP;
+  const innerBot = TREND_VB_H - TREND_PAD_TOP;
+  const mapY = (kw) => innerBot - (kw / niceMax) * (innerBot - innerTop);
+
+  // Render all buffered samples (including up to ~5s past the visible window)
+  // so the leftmost visible point has off-screen Catmull-Rom neighbours; the
+  // SVG clip-path crops the actual visual to the viewBox.
+  const renderable = samples.filter(s => s.t >= start - 5000);
+  const pts = renderable.map(s => ({
+    x: ((s.t - start) / SPARK_WINDOW_MS) * TREND_VB_W,
+    y: mapY(s.kw),
+  }));
+
+  // Pin a virtual head point at x=TREND_VB_W using the smoothed baseline.
+  // Without this the rightmost sample's x oscillates between ~996 and 1000 as
+  // each 200ms synthetic sample lands and drifts — visible as edge jiggle.
+  const headKw = state.smoothedKw ?? state.live?.totalKw ?? renderable[renderable.length - 1].kw;
+  const headPt = { x: TREND_VB_W, y: mapY(headKw) };
+  if (pts.length === 0 || pts[pts.length - 1].x < TREND_VB_W - 1) {
+    pts.push(headPt);
+  } else {
+    pts[pts.length - 1] = headPt;
+  }
+
+  // Smooth line + closed area
+  const lineD = smoothPathD(pts);
+  trendLine.setAttribute('d', lineD);
+  const areaD = lineD
+    + ` L ${pts[pts.length - 1].x.toFixed(1)},${innerBot}`
+    + ` L ${pts[0].x.toFixed(1)},${innerBot} Z`;
+  trendArea.setAttribute('d', areaD);
+
+  // Pulsing live dot pinned to the latest sample
+  const lastP = pts[pts.length - 1];
+  trendDot.setAttribute('cx', lastP.x.toFixed(1));
+  trendDot.setAttribute('cy', lastP.y.toFixed(1));
+  trendDot.setAttribute('opacity', '1');
+  trendDotHalo.setAttribute('cx', lastP.x.toFixed(1));
+  trendDotHalo.setAttribute('cy', lastP.y.toFixed(1));
+  trendDotHalo.setAttribute('opacity', '0.5');
+
+  // Y-axis labels: top = niceMax, middle = niceMax/2, bottom = 0
+  const yScale = $('trendYScale');
+  if (yScale) {
+    yScale.children[0].textContent = fmtKwShort(niceMax);
+    yScale.children[1].textContent = fmtKwShort(niceMax / 2);
+    yScale.children[2].textContent = '0';
+  }
+
+  // Stats — "Now" reads the real polled value, never the jittered sample
+  const lo = Math.min(...inWindow.map(s => s.kw));
+  const hi = Math.max(...inWindow.map(s => s.kw));
+  const avg = inWindow.reduce((a, s) => a + s.kw, 0) / inWindow.length;
+  const cur = state.live?.totalKw ?? samples[samples.length - 1].kw;
+
+  // Trend arrow: last 10s of the window vs. the preceding 50s
+  const recentCutoff = now - 10_000;
+  const recent = inWindow.filter(s => s.t >= recentCutoff);
+  const old    = inWindow.filter(s => s.t <  recentCutoff);
+  const recentAvg = recent.length ? recent.reduce((a,s) => a + s.kw, 0) / recent.length : cur;
+  const oldAvg    = old.length    ? old.reduce((a,s)    => a + s.kw, 0) / old.length    : cur;
+  const delta = recentAvg - oldAvg;
+  let arrow = '<span class="trend-trend-arrow trend-trend-flat">→</span>';
+  if (Math.abs(delta) > 0.05) {
+    arrow = delta > 0
+      ? '<span class="trend-trend-arrow trend-trend-up">↑</span>'
+      : '<span class="trend-trend-arrow trend-trend-down">↓</span>';
+  }
+
+  trendNow.innerHTML   = `${arrow}${fmtKwShort(cur)}`;
+  trendAvg.textContent = fmtKwShort(avg);
+  trendRange.textContent = `${fmtKwShort(lo)} – ${fmtKwShort(hi)}`;
 }
 
 // ─── Circuit colors ────────────────────────────────────────────────────────
@@ -887,6 +1509,7 @@ function assignColors(circuits) {
 
 function buildCircuitGrid(circuits) {
   circuitGrid.innerHTML = '';
+  state.circuitOrder = circuits.map(c => c.id);
   circuits.forEach((c, i) => {
     const color = state.circuitColors[c.id];
     const icon  = TYPE_ICONS[c.type] || '🔌';
@@ -897,7 +1520,7 @@ function buildCircuitGrid(circuits) {
     div.innerHTML = `
       <div class="circuit-hd">
         <div class="circuit-icon" style="background:${color}22;color:${color}">${icon}</div>
-        <div class="circuit-name" title="${c.name}">${c.name}</div>
+        <div class="circuit-name" title="${c.name}"><span class="circuit-number" id="cn-${c.id}">${i + 1}</span>${c.name}</div>
       </div>
       <div>
         <div class="circuit-watts" id="cw-${c.id}" style="color:${color}">— W</div>
@@ -910,6 +1533,56 @@ function buildCircuitGrid(circuits) {
   });
 }
 
+// FLIP-style reorder: capture old positions, mutate DOM, animate from old → new.
+function reorderCircuitsByUsage(live) {
+  if (!state.device || !live) return;
+  const circuits = state.device.circuits;
+
+  const sorted = [...circuits].sort((a, b) => {
+    const ka = live.circuits[a.id]?.kw ?? 0;
+    const kb = live.circuits[b.id]?.kw ?? 0;
+    return kb - ka;
+  });
+  const newOrder = sorted.map(c => c.id);
+
+  // Skip animation if order is unchanged
+  const same = newOrder.length === state.circuitOrder.length &&
+               newOrder.every((id, i) => id === state.circuitOrder[i]);
+
+  // Always update the displayed number prefix (1..N)
+  newOrder.forEach((id, idx) => {
+    const cn = $(`cn-${id}`);
+    if (cn) cn.textContent = String(idx + 1);
+  });
+
+  if (same) return;
+
+  // FLIP: First = capture old positions
+  const cards = newOrder.map(id => $(`cc-${id}`));
+  const firsts = cards.map(el => el.getBoundingClientRect());
+
+  // Last = mutate DOM order to match newOrder
+  const frag = document.createDocumentFragment();
+  cards.forEach(el => frag.appendChild(el));
+  circuitGrid.appendChild(frag);
+
+  // Invert + Play
+  cards.forEach((el, i) => {
+    const last = el.getBoundingClientRect();
+    const dx = firsts[i].left - last.left;
+    const dy = firsts[i].top  - last.top;
+    if (dx === 0 && dy === 0) return;
+    el.style.transition = 'none';
+    el.style.transform  = `translate(${dx}px, ${dy}px)`;
+    requestAnimationFrame(() => {
+      el.style.transition = 'transform 0.45s cubic-bezier(0.23,1,0.32,1)';
+      el.style.transform  = '';
+    });
+  });
+
+  state.circuitOrder = newOrder;
+}
+
 function updateCircuitCards(live, today) {
   if (!state.device) return;
   const circuits = state.device.circuits;
@@ -920,25 +1593,30 @@ function updateCircuitCards(live, today) {
   circuits.forEach(c => {
     const liveData  = live?.circuits?.[c.id];
     const kw        = liveData?.kw ?? 0;
-    const watts     = kw * 1000;
     const todayCirc = today?.circuits?.[c.id] ?? 0;
-    const color     = state.circuitColors[c.id];
 
     const wEl = $(`cw-${c.id}`);
     const kEl = $(`ck-${c.id}`);
     const bEl = $(`cb-${c.id}`);
     const card = $(`cc-${c.id}`);
 
-    if (wEl) wEl.textContent = watts >= 1000 ? `${(watts/1000).toFixed(2)} kW` : `${watts.toFixed(0)} W`;
+    if (wEl) {
+      tweenTo(`cc.kw.${c.id}`, kw, TWEEN_MS, (v) => {
+        const w = v * 1000;
+        wEl.textContent = w >= 1000 ? `${(w / 1000).toFixed(2)} kW` : `${w.toFixed(0)} W`;
+      });
+    }
     if (kEl) kEl.textContent = `${todayCirc.toFixed(3)} kWh today`;
-    if (bEl) bEl.style.width = `${(kw / maxCircuitKw * 100).toFixed(1)}%`;
+    if (bEl) {
+      tweenTo(`cc.bar.${c.id}`, kw / maxCircuitKw, TWEEN_MS, (frac) => {
+        bEl.style.width = `${(Math.max(0, Math.min(1, frac)) * 100).toFixed(1)}%`;
+      });
+    }
 
     if (card) {
-      if (watts > 10) {
-        card.classList.add('active');
-      } else {
-        card.classList.remove('active');
-      }
+      // Use the underlying kw, not the tweened display value, for active-state
+      if (kw * 1000 > 10) card.classList.add('active');
+      else                card.classList.remove('active');
     }
   });
 }
@@ -1025,10 +1703,21 @@ function renderChart(week, device) {
     stack.className = 'bar-stack';
     stack.style.height = '100%';
 
-    // Tooltip data
+    // Tooltip data — desktop hover + mobile tap toggle
     col.addEventListener('mouseenter', e => showTooltip(e, day, device, tzName));
     col.addEventListener('mousemove',  e => moveTooltip(e));
     col.addEventListener('mouseleave', hideTooltip);
+    col.addEventListener('click', e => {
+      // On touch devices, click toggles persist-mode visibility.
+      if (tooltip.classList.contains('persist') && tooltip._persistFor === day.ts) {
+        hideTooltip();
+      } else {
+        showTooltip(e, day, device, tzName);
+        tooltip.classList.add('persist');
+        tooltip._persistFor = day.ts;
+      }
+      e.stopPropagation();
+    });
 
     // Render segments in reverse so bottom circuit is at the bottom
     const circsByKwh = [...circuits].sort((a,b) => (day.circuits[a.id]??0) - (day.circuits[b.id]??0));
@@ -1090,22 +1779,42 @@ function moveTooltip(e) {
   tooltip.style.top  = (y + th > window.innerHeight ? y - th : y) + 'px';
 }
 
-function hideTooltip() { tooltip.classList.remove('visible'); }
+function hideTooltip() {
+  tooltip.classList.remove('visible');
+  tooltip.classList.remove('persist');
+  tooltip._persistFor = null;
+}
+
+// Tap anywhere outside a bar dismisses a sticky (persist) tooltip on iOS.
+document.addEventListener('click', (e) => {
+  if (!tooltip.classList.contains('persist')) return;
+  if (e.target.closest && e.target.closest('.bar-col')) return;
+  hideTooltip();
+});
 
 // ─── Gauge meta (volts/amps) ─────────────────────────────────────────────────
 
 function updateGaugeMeta(live) {
   if (!live) return;
-  // Find voltage/amps from first circuit with data
   const circuits = Object.values(live.circuits || {});
   const withVolt = circuits.find(c => c.volts != null);
-  metaVoltage.textContent = withVolt ? `${withVolt.volts.toFixed(0)}V` : '—';
+  if (withVolt) {
+    tweenTo('meta.volts', withVolt.volts, TWEEN_MS,
+            (v) => { metaVoltage.textContent = `${v.toFixed(0)}V`; });
+  } else {
+    metaVoltage.textContent = '—';
+  }
 
   // Estimate total amps = total kW × 1000 / 240V
   const totalAmps = live.totalKw * 1000 / 240;
-  metaAmps.textContent = totalAmps > 0.1 ? `${totalAmps.toFixed(1)}A` : '—';
+  if (totalAmps > 0.1) {
+    tweenTo('meta.amps', totalAmps, TWEEN_MS,
+            (v) => { metaAmps.textContent = `${v.toFixed(1)}A`; });
+  } else {
+    _lastTarget.delete('meta.amps');
+    metaAmps.textContent = '—';
+  }
 
-  // Count active circuits (>10W)
   if (state.device) {
     const active = state.device.circuits.filter(c => (live.circuits[c.id]?.kw ?? 0) * 1000 > 10).length;
     metaCircuits.textContent = `${active}/${state.device.circuits.length}`;
@@ -1184,19 +1893,61 @@ async function fetchSnapshot(name) {
   return body;
 }
 
+function setConnected(connected) {
+  if (state.connected === connected) return;
+  state.connected = connected;
+  document.body.classList.toggle('disconnected', !connected);
+}
+
 async function tickLive() {
   try {
     const live = await fetchSnapshot('live');
-    if (!live) return;
+    if (!live) { setConnected(false); return; }
+
+    setConnected(true);
     state.live = live;
+
+    // Client-side fallback peak (only used if server hasn't responded yet)
+    updatePeak(live.totalKw);
+
+    // Sparkline: seed once from the 15-min server series, then push each tick
+    if (Array.isArray(live.series) && state.totalKwSeries.length === 0) {
+      const cutoff = Date.now() - SPARK_WINDOW_MS;
+      for (const p of live.series) {
+        const t = new Date(p.ts).getTime();
+        if (t >= cutoff) state.totalKwSeries.push({ t, kw: p.totalKw || 0 });
+      }
+    }
+    pushKwSample(live.totalKw);
+    renderTrendChart();
+
     setGauge(live.totalKw);
     updateGaugeMeta(live);
     updateCircuitCards(live, state.today);
+    reorderCircuitsByUsage(live);
     refreshLastUpdated();
   } catch (e) {
     lastCache.live = { at: lastCache.live?.at, error: e.message };
+    setConnected(false);
     refreshLastUpdated();
   }
+}
+
+async function tickPeak() {
+  try {
+    const peak = await fetchSnapshot('peak');
+    if (!peak || peak.peakKw == null) return;
+    // Server-truth wins over client-tracked peak
+    if (peak.peakKw > state.peakKw || state.peakSource !== 'server') {
+      state.peakKw   = peak.peakKw;
+      state.peakDate = peak.date;
+      state.peakSource = 'server';
+      savePeak();
+      renderPeak();
+      // Server peak may be higher than current ratchet — bump tier to match.
+      maybeRatchetGauge(state.peakKw);
+    }
+  } catch { /* leave client peak in place */ }
 }
 
 async function tickToday() {
@@ -1247,22 +1998,60 @@ async function loadDeviceOnce() {
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 
+async function loadUiConfig() {
+  try {
+    const res = await fetch('/api/ui-config');
+    if (!res.ok) return;
+    const cfg = await res.json();
+    state.ui = { ...state.ui, ...cfg };
+  } catch { /* defaults are fine */ }
+  document.documentElement.setAttribute('data-theme', state.ui.theme || 'dark');
+  if (trendWrap) trendWrap.style.display = state.ui.sparkline ? '' : 'none';
+}
+
 async function boot() {
+  // 0. Load UI config (theme, tween, sparkline toggles) before anything else.
+  await loadUiConfig();
+
+  // Restore today's peak from localStorage if same day
+  loadPeak();
+
   drawTicks();
   refreshLastUpdated();
 
   // 1. Load device info (with retries) — needed before circuit grid can render
   await loadDeviceOnce();
 
+  // After device is loaded we know the timezone — verify peak is for today
+  if (state.peakDate && state.peakDate !== localDateStr(state.device?.timezone)) {
+    state.peakKw = 0;
+    state.peakDate = localDateStr(state.device?.timezone);
+    savePeak();
+  }
+  renderPeak();
+
   // 2. Fire all data fetches in parallel
   tickLive();
   tickToday();
   tickWeek();
+  tickPeak();
 
-  // 3. Frequent refresh — server caches each snapshot, so this is cheap
-  setInterval(tickLive,  5_000);    // visible smoothness
-  setInterval(tickToday, 30_000);   // today bumps every 30s
-  setInterval(tickWeek,  5 * 60_000);  // week shifts slowly
+  // 3. Start the slow needle-drift loop unless explicitly disabled
+  if (state.ui.jitter) requestAnimationFrame(wobbleLoop);
+
+  // 4. Trend chart: re-render every 100ms so the curve scrolls smoothly as
+  //    `now` advances (each sample's x-position drifts with elapsed time).
+  setInterval(renderTrendChart, 100);
+
+  // 4b. Synthetic in-between samples so the curve keeps moving during the
+  //     15s gap between real polls.
+  setInterval(tickSyntheticSample, SYNTHETIC_SAMPLE_MS);
+
+  // 5. Frequent refresh — server caches each snapshot, so this is cheap
+  setInterval(tickLive,  LIVE_POLL_MS); // visible smoothness; tween settles between polls
+  setInterval(tickToday, 30_000);       // today bumps every 30s
+  setInterval(tickWeek,  5 * 60_000);   // week shifts slowly
+  setInterval(tickPeak,  3 * 60_000);   // server peak refreshes every 3 min
 }
 
 boot();

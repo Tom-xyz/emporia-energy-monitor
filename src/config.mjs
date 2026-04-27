@@ -41,12 +41,21 @@ export async function loadConfig() {
   const dataDir = env.DATA_DIR || defaultDataDir();
   await fs.mkdir(dataDir, { recursive: true });
 
+  const theme = (env.THEME || 'dark').toLowerCase();
+  const validThemes = ['dark', 'light', 'auto'];
+
   return {
     plugin:    env.PLUGIN || 'emporia',
     port:      parseInt(env.PORT || '3030', 10),
     host:      env.HOST || '0.0.0.0',
     dataDir,
     logLevel:  env.LOG_LEVEL || 'info',
+    ui: {
+      theme:        validThemes.includes(theme) ? theme : 'dark',
+      tween:        env.TWEEN === '1',
+      jitter:       env.JITTER !== '0',
+      sparkline:    env.SHOW_SPARKLINE !== '0',
+    },
     plugins: {
       emporia: {
         email:       env.EMPORIA_EMAIL,
@@ -54,6 +63,7 @@ export async function loadConfig() {
         keysFile:    env.EMPORIA_KEYS_FILE,
         deviceIndex: parseInt(env.EMPORIA_DEVICE_INDEX || '0', 10),
         timezone:    env.EMPORIA_TIMEZONE,
+        fastLive:    env.EMPORIA_FAST_LIVE === '1',
         dataDir,
       },
     },

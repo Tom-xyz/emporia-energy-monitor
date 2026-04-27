@@ -1,12 +1,10 @@
 # emporia-monitor
 
-A real-time, liquid-glass energy dashboard for [Emporia Vue](https://www.emporiaenergy.com/) whole-home energy monitors. Self-hosted, single binary, dark/light auto, mobile-friendly.
+A real-time, liquid-glass energy dashboard for [Emporia Vue](https://www.emporiaenergy.com/) whole-home energy monitors. Self-hosted, single binary, dark by default with a light option, mobile-friendly.
 
-![dashboard — 7-day chart and circuit grid](docs/screenshots/dashboard-1.png)
+![dashboard](docs/screenshots/dashboard.png)
 
-The Emporia mobile app shows you graphs. This shows you a **dashboard**: live wattage on a glowing arc gauge, today's kWh + cost, a stacked 7-day history, and a per-circuit live grid that pulses when a circuit is active. Designed to be left up on a screen.
-
-![dashboard — today's energy summary](docs/screenshots/dashboard-2.png)
+The Emporia mobile app shows you graphs. This shows you a **dashboard**: live wattage on a glowing arc gauge, today's kWh + cost, a stacked 7-day history, a 10-minute braille sparkline of total consumption, and a per-circuit live grid that pulses when a circuit is active. Numbers tween smoothly between polls so the screen feels alive without ever showing fake data. Designed to be left up on a screen.
 
 ---
 

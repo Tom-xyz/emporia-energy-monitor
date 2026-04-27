@@ -40,7 +40,21 @@ export class EmporiaAuth {
 
   async _saveCache() {
     if (!this.tokens) return;
-    await fs.writeFile(this.keysFile, JSON.stringify(this.tokens, null, 2), { mode: 0o600 });
+    try {
+      await fs.writeFile(this.keysFile, JSON.stringify(this.tokens, null, 2), { mode: 0o600 });
+    } catch (e) {
+      // A read-only filesystem (e.g. systemd-hardened deploy) shouldn't break
+      // auth — tokens stay valid in-memory until process restart, and login
+      // will retry from scratch next boot. Just warn once per occurrence.
+      if (e.code === 'EROFS' || e.code === 'EACCES' || e.code === 'EPERM') {
+        if (!this._warnedSaveFail) {
+          console.warn(`[emporia auth] cannot persist token cache (${e.code} on ${this.keysFile}); continuing in-memory only`);
+          this._warnedSaveFail = true;
+        }
+        return;
+      }
+      throw e;
+    }
   }
 
   async _login() {

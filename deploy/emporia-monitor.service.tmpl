@@ -31,8 +31,11 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=tmpfs
+# App tree (binaries, code) is bound back read-only…
 BindReadOnlyPaths=@APP_DIR@
-ReadWritePaths=@APP_DIR@
+# …but data/ must be writable so the auth plugin can persist refreshed tokens.
+# A separate RW bind on the subdir wins over the RO bind on the parent.
+BindPaths=@APP_DIR@/data
 
 # ── Kernel/syscall isolation ──
 ProtectKernelTunables=true
